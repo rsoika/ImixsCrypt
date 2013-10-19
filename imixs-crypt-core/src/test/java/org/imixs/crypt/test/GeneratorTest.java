@@ -13,14 +13,21 @@ import java.security.PublicKey;
 import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
 
 import junit.framework.Assert;
 
+import org.imixs.crypt.ImixsKeyGenerator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RSATest {
+/**
+ * This class test the imixs.crypt KeyGenerator
+ * @author rsoika
+ *
+ */
+public class GeneratorTest {
 
 	static final String ALGORITHM = "RSA";
 	static final String PRIVATE_KEY_FILE = "src/test/resources/private.key";
@@ -29,7 +36,7 @@ public class RSATest {
 	PublicKey publicKey = null;
 	PrivateKey privateKey = null;
 
-	private final static Logger logger = Logger.getLogger(RSATest.class
+	private final static Logger logger = Logger.getLogger(GeneratorTest.class
 			.getName());
 
 	/**
@@ -40,53 +47,12 @@ public class RSATest {
 	@Before
 	public void setup() {
 		try {
-			final KeyPairGenerator keyGen = KeyPairGenerator
-					.getInstance(ALGORITHM);
-			keyGen.initialize(1024);
 			
-			
-			
-			final KeyPair key = keyGen.generateKeyPair();
-
-			File privateKeyFile = new File(PRIVATE_KEY_FILE);
-			File publicKeyFile = new File(PUBLIC_KEY_FILE);
-
-			// Create files to store public and private key
-			if (privateKeyFile.getParentFile() != null) {
-				privateKeyFile.getParentFile().mkdirs();
-			}
-			privateKeyFile.createNewFile();
-
-			if (publicKeyFile.getParentFile() != null) {
-				publicKeyFile.getParentFile().mkdirs();
-			}
-			publicKeyFile.createNewFile();
-
-			// Saving the Public key in a file
-			ObjectOutputStream publicKeyOS = new ObjectOutputStream(
-					new FileOutputStream(publicKeyFile));
-			publicKeyOS.writeObject(key.getPublic());
-			publicKeyOS.close();
-
-			// Saving the Private key in a file
-			ObjectOutputStream privateKeyOS = new ObjectOutputStream(
-					new FileOutputStream(privateKeyFile));
-			privateKeyOS.writeObject(key.getPrivate());
-			privateKeyOS.close();
-
-			// now generyte keys
-
-			// Encrypt the string using the public key
-			InputStream inputStream = new ObjectInputStream(
-					new FileInputStream(PUBLIC_KEY_FILE));
-			publicKey = (PublicKey) ((ObjectInputStream) inputStream)
-					.readObject();
-
-			// Decrypt the cipher text using the private key.
-			inputStream = new ObjectInputStream(new FileInputStream(
-					PRIVATE_KEY_FILE));
-			privateKey = (PrivateKey) ((ObjectInputStream) inputStream)
-					.readObject();
+			ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE, ALGORITHM);
+		
+		
+			publicKey=ImixsKeyGenerator.getPublicKey(PUBLIC_KEY_FILE);
+			privateKey=ImixsKeyGenerator.getPrivatKey(PRIVATE_KEY_FILE);
 
 		} catch (Exception e) {
 			e.printStackTrace();
