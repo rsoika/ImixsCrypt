@@ -67,18 +67,22 @@ public class GeneratorTest {
 	}
 
 	@Test
-	public void generateKeyTest() throws NoSuchAlgorithmException, IOException {
+	public void generateKeyTest() throws Exception {
 		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
-				ALGORITHM);
+				ALGORITHM, null);
+
+		// test with password
+		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+				ALGORITHM, "mypassword");
 	}
 
 	@Test
 	public void testGetKeys() throws Exception {
 		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
-				ALGORITHM);
+				ALGORITHM, null);
 
 		privateKey = ImixsKeyGenerator.getPemPrivateKey(PRIVATE_KEY_FILE,
-				ALGORITHM);
+				ALGORITHM, null);
 
 		Assert.assertNotNull(privateKey);
 
@@ -87,26 +91,61 @@ public class GeneratorTest {
 
 		Assert.assertNotNull(publicKey);
 	}
-	
-	
+
 	/**
-	 * Simple crypt/decrypt test
-	 * @throws Exception 
+	 * Test generyte key pair with password encryption
+	 * 
+	 * @throws Exception
 	 */
 	@Test
-	public void encryptDecryptTest() throws Exception {
+	public void testGetEncryptedKeys() throws Exception {
+
+		String password = "mypassword";
 
 		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
-				ALGORITHM);
+				ALGORITHM, password);
 
 		privateKey = ImixsKeyGenerator.getPemPrivateKey(PRIVATE_KEY_FILE,
-				ALGORITHM);
+				ALGORITHM, password);
 
 		Assert.assertNotNull(privateKey);
 
 		publicKey = ImixsKeyGenerator.getPemPublicKey(PUBLIC_KEY_FILE,
 				ALGORITHM);
+
+		Assert.assertNotNull(publicKey);
+
+		// test get key with wrong password - exception expected
+		try {
+			privateKey = ImixsKeyGenerator.getPemPrivateKey(PRIVATE_KEY_FILE,
+					ALGORITHM, "wrong-password");
+			
+			Assert.fail();
+		} catch (Exception e) {
+			// works!
+		}
 		
+	}
+
+	/**
+	 * Simple crypt/decrypt test
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void encryptDecryptTest() throws Exception {
+
+		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+				ALGORITHM, null);
+
+		privateKey = ImixsKeyGenerator.getPemPrivateKey(PRIVATE_KEY_FILE,
+				ALGORITHM, null);
+
+		Assert.assertNotNull(privateKey);
+
+		publicKey = ImixsKeyGenerator.getPemPublicKey(PUBLIC_KEY_FILE,
+				ALGORITHM);
+
 		Assert.assertNotNull(publicKey);
 
 		byte[] cipherText = null;
@@ -124,12 +163,46 @@ public class GeneratorTest {
 		Assert.assertNotSame(plainText + "x", originalText);
 
 	}
-	
-	
-	
-	
-	
-	
+
+	/**
+	 * Simple crypt/decrypt test with encrypted Keys
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void encryptDecryptTestWithEncryptedKey() throws Exception {
+
+		String password = "my-password47";
+
+		ImixsKeyGenerator.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+				ALGORITHM, password);
+
+		privateKey = ImixsKeyGenerator.getPemPrivateKey(PRIVATE_KEY_FILE,
+				ALGORITHM, password);
+
+		Assert.assertNotNull(privateKey);
+
+		publicKey = ImixsKeyGenerator.getPemPublicKey(PUBLIC_KEY_FILE,
+				ALGORITHM);
+
+		Assert.assertNotNull(publicKey);
+
+		byte[] cipherText = null;
+
+		String originalText = "Hello World";
+
+		cipherText = encrypt(originalText, publicKey);
+
+		logger.info(cipherText.toString());
+
+		String plainText = decrypt(cipherText, privateKey);
+
+		Assert.assertEquals(originalText, plainText);
+
+		Assert.assertNotSame(plainText + "x", originalText);
+
+	}
+
 	/**
 	 * Encrypt the plain text using public key.
 	 * 
@@ -180,6 +253,5 @@ public class GeneratorTest {
 
 		return new String(dectyptedText);
 	}
-
 
 }

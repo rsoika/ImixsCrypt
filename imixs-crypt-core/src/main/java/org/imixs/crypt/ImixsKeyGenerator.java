@@ -1,5 +1,7 @@
 package org.imixs.crypt;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +15,8 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -20,12 +24,22 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Random;
 import java.util.Scanner;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.xml.bind.DatatypeConverter;
 
 /**
@@ -49,55 +63,45 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class ImixsKeyGenerator {
 
+	static String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
+	private static final int ITERATIONS = 1000;
+
 	/**
-	 * generates a key pair and stores it in the filesystem
+	 * generates a key pair and stores it in the filesystem. An optional
+	 * password will encrypt the private key
 	 * 
 	 * @param privateKeyFile
 	 * @param publicKeyFile
 	 * @param algorithm
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
+	 * @param password
+	 *            optional password to encrypt the private key
+	 * @throws Exception
 	 */
 	public static void generateKeyPair(String privateKeyFileName,
-			String publicKeyFileName, String algorithm)
-			throws NoSuchAlgorithmException, IOException {
+			String publicKeyFileName, String algorithm, String password)
+			throws Exception {
 		final KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
 		keyGen.initialize(1024);
 
 		final KeyPair key = keyGen.generateKeyPair();
 
-		writeKeyToFile(key.getPublic(), publicKeyFileName);
+		writeKeyToFile(key.getPublic(), publicKeyFileName, null);
 
-		writeKeyToFile(key.getPrivate(), privateKeyFileName);
+		writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
 
 	}
 
-	public static PublicKey getPublicKey(String PUBLIC_KEY_FILE)
-			throws FileNotFoundException, ClassNotFoundException {
-		PublicKey key = null;
-		InputStream inputStream = null;
-
-		try {
-			inputStream = new ObjectInputStream(new FileInputStream(
-					PUBLIC_KEY_FILE));
-			key = (PublicKey) ((ObjectInputStream) inputStream).readObject();
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		} finally {
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		return key;
-	}
-
-	public static PrivateKey getPemPrivateKey(String filename, String algorithm)
-			throws Exception {
+	/**
+	 * Extracts a PrivateKey from a key file. The optional password is used to
+	 * decrypt the key.
+	 * 
+	 * @param filename
+	 * @param algorithm
+	 * @return
+	 * @throws Exception
+	 */
+	public static PrivateKey getPemPrivateKey(String filename,
+			String algorithm, String password) throws Exception {
 		File f = new File(filename);
 		FileInputStream fis = new FileInputStream(f);
 		DataInputStream dis = new DataInputStream(fis);
@@ -112,6 +116,15 @@ public class ImixsKeyGenerator {
 		// System.out.println("Private key\n"+privKeyPEM);
 
 		byte[] decoded = Base64Coder.decodeLines(privKeyPEM);
+		
+		/*
+		 * Check if password is used to encrypt the key
+		 */
+		if (password != null && !password.isEmpty()) {
+			// Here we actually encrypt the key
+			decoded = passwordDecrypt(password.toCharArray(), decoded);
+		}
+		
 
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
 		KeyFactory kf = KeyFactory.getInstance(algorithm);
@@ -143,38 +156,13 @@ public class ImixsKeyGenerator {
 		return key;
 	}
 
-	public static PrivateKey oldgetPrivatKey(String PRIVATE_KEY_FILE)
-			throws FileNotFoundException, ClassNotFoundException {
-		PrivateKey privateKey = null;
-		InputStream inputStream = null;
-		try {
-			inputStream = new ObjectInputStream(new FileInputStream(
-					PRIVATE_KEY_FILE));
-			privateKey = (PrivateKey) ((ObjectInputStream) inputStream)
-					.readObject();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			try {
-				inputStream.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		return privateKey;
-	}
-
 	/**
 	 * writes a key into the filesystem. using Base64 encoding
 	 * 
-	 * @throws IOException
-	 * @throws FileNotFoundException
+	 * @throws Exception
 	 */
-	public static void writeKeyToFile(Key key, String keyFileName)
-			throws FileNotFoundException, IOException {
+	private static void writeKeyToFile(Key key, String keyFileName,
+			String password) throws Exception {
 		// Saving the key in a file
 
 		File keyFile = new File(keyFileName);
@@ -184,7 +172,16 @@ public class ImixsKeyGenerator {
 		}
 		keyFile.createNewFile();
 
-		String sEncodedKey = Base64Coder.encodeLines(key.getEncoded());
+		/*
+		 * Check if password is used to encrypt the key
+		 */
+		byte[] keyBytes = key.getEncoded();
+		if (password != null && !password.isEmpty()) {
+			// Here we actually encrypt the key
+			keyBytes = passwordEncrypt(password.toCharArray(), keyBytes);
+		}
+
+		String sEncodedKey = Base64Coder.encodeLines(keyBytes);
 
 		System.out.println("Write Key : ");
 		System.out.println("");
@@ -201,94 +198,87 @@ public class ImixsKeyGenerator {
 
 	}
 
-	public static KeyPair demo(InputStream pub, InputStream pvt) throws IOException,
-			GeneralSecurityException {
-		KeyFactory f = KeyFactory.getInstance("RSA");
+	/**
+	 * Utility method to encrypt a byte array with a given password. Salt will
+	 * be the first 8 bytes of the byte array returned.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchPaddingException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws InvalidKeyException
+	 * @throws IOException
+	 */
+	private static byte[] passwordEncrypt(char[] password, byte[] plaintext)
+			throws NoSuchAlgorithmException, InvalidKeySpecException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException, InvalidKeyException,
+			InvalidAlgorithmParameterException, IOException {
 
-		RSAPublicKeySpec pubspec = decodeRSAPublicSSH(readAllBase64Bytes(pub));
-		RSAPrivateCrtKeySpec pvtspec = decodeRSAPrivatePKCS1(readAllBase64Bytes(pvt));
+		// Create the salt.
+		byte[] salt = new byte[8];
+		Random random = new Random();
+		random.nextBytes(salt);
 
-		return new KeyPair(f.generatePublic(pubspec),
-				f.generatePrivate(pvtspec));
+		// Create a PBE key and cipher.
+		PBEKeySpec keySpec = new PBEKeySpec(password);
+		SecretKeyFactory keyFactory = SecretKeyFactory
+				.getInstance(SECRET_KEY_ALGORYTHM);
+		SecretKey key = keyFactory.generateSecret(keySpec);
+		PBEParameterSpec paramSpec = new PBEParameterSpec(salt, ITERATIONS);
+		Cipher cipher = Cipher.getInstance(SECRET_KEY_ALGORYTHM);
+		cipher.init(Cipher.ENCRYPT_MODE, key, paramSpec);
+
+		// Encrypt the array
+		byte[] ciphertext = cipher.doFinal(plaintext);
+
+		// Write out the salt, then the ciphertext and return it.
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		baos.write(salt);
+		baos.write(ciphertext);
+		return baos.toByteArray();
 	}
 
-	static RSAPublicKeySpec decodeRSAPublicSSH(byte[] encoded) {
-		ByteBuffer input = ByteBuffer.wrap(encoded);
-		String type = string(input);
-		if (!"ssh-rsa".equals(type))
-			throw new IllegalArgumentException("Unsupported type");
-		BigInteger exp = sshint(input);
-		BigInteger mod = sshint(input);
-		if (input.hasRemaining())
-			throw new IllegalArgumentException("Excess data");
-		return new RSAPublicKeySpec(mod, exp);
-	}
+	/**
+	 * Utility method to decrypt a byte array with a given password. Salt will
+	 * be the first 8 bytes in the array passed in.
+	 * 
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws InvalidKeyException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws NoSuchPaddingException
+	 */
+	private static byte[] passwordDecrypt(char[] password, byte[] ciphertext)
+			throws NoSuchAlgorithmException, InvalidKeySpecException,
+			InvalidKeyException, InvalidAlgorithmParameterException,
+			IllegalBlockSizeException, BadPaddingException,
+			NoSuchPaddingException {
 
-	static RSAPrivateCrtKeySpec decodeRSAPrivatePKCS1(byte[] encoded) {
-		ByteBuffer input = ByteBuffer.wrap(encoded);
-		if (der(input, 0x30) != input.remaining())
-			throw new IllegalArgumentException("Excess data");
-		if (!BigInteger.ZERO.equals(derint(input)))
-			throw new IllegalArgumentException("Unsupported version");
-		BigInteger n = derint(input);
-		BigInteger e = derint(input);
-		BigInteger d = derint(input);
-		BigInteger p = derint(input);
-		BigInteger q = derint(input);
-		BigInteger ep = derint(input);
-		BigInteger eq = derint(input);
-		BigInteger c = derint(input);
-		return new RSAPrivateCrtKeySpec(n, e, d, p, q, ep, eq, c);
-	}
+		// Read in the salt.
+		byte[] salt = new byte[8];
+		ByteArrayInputStream bais = new ByteArrayInputStream(ciphertext);
+		bais.read(salt, 0, 8);
 
-	private static String string(ByteBuffer buf) {
-		return new String(lenval(buf), Charset.forName("US-ASCII"));
-	}
+		// The remaining bytes are the actual ciphertext.
+		byte[] remainingCiphertext = new byte[ciphertext.length - 8];
+		bais.read(remainingCiphertext, 0, ciphertext.length - 8);
 
-	private static BigInteger sshint(ByteBuffer buf) {
-		return new BigInteger(+1, lenval(buf));
-	}
+		// Create a PBE cipher to decrypt the byte array.
+		PBEKeySpec keySpec = new PBEKeySpec(password);
+		SecretKeyFactory keyFactory = SecretKeyFactory
+				.getInstance(SECRET_KEY_ALGORYTHM);
+		SecretKey key = keyFactory.generateSecret(keySpec);
+		PBEParameterSpec paramSpec = new PBEParameterSpec(salt, ITERATIONS);
+		Cipher cipher = Cipher.getInstance(SECRET_KEY_ALGORYTHM);
 
-	private static byte[] lenval(ByteBuffer buf) {
-		int len = buf.getInt();
-		byte[] copy = new byte[len];
-		buf.get(copy);
-		return copy;
-	}
-
-	private static BigInteger derint(ByteBuffer input) {
-		byte[] value = new byte[der(input, 0x02)];
-		input.get(value);
-		return new BigInteger(+1, value);
-	}
-
-	private static int der(ByteBuffer input, int exp) {
-		int tag = input.get() & 0xFF;
-		if (tag != exp)
-			throw new IllegalArgumentException("Unexpected tag");
-		int n = input.get() & 0xFF;
-		if (n < 128)
-			return n;
-		n &= 0x7F;
-		if ((n < 1) || (n > 2))
-			throw new IllegalArgumentException("Invalid length");
-		int len = 0;
-		while (n-- > 0) {
-			len <<= 8;
-			len |= input.get() & 0xFF;
-		}
-		return len;
-	}
-
-	private static byte[] readAllBase64Bytes(InputStream input) {
-		StringBuilder buf = new StringBuilder();
-		Scanner scanner = new Scanner(input, "US-ASCII");
-		while (scanner.hasNextLine()) {
-			String line = scanner.nextLine().trim();
-			if (!line.startsWith("-----"))
-				buf.append(line);
-		}
-		return DatatypeConverter.parseBase64Binary(buf.toString());
+		// Perform the actual decryption.
+		cipher.init(Cipher.DECRYPT_MODE, key, paramSpec);
+		return cipher.doFinal(remainingCiphertext);
 	}
 
 }
