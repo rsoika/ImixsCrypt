@@ -41,8 +41,10 @@
 package org.imixs.crypt.server;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 
 import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -52,17 +54,23 @@ import com.sun.jersey.api.json.JSONConfiguration;
 public class Main {
 
 	public static void main(String[] args) throws IOException {
-
-		// HttpServer server = HttpServer.createSimpleServer();
-		// create jersey-grizzly server
-		ResourceConfig rc = new PackagesResourceConfig("org.imixs.crypt.rest");
-		
-		// add json support
-		rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
-		
-		HttpServer server = GrizzlyServerFactory.createHttpServer(
-				"http://localhost:8080", rc);
 		try {
+			// HttpServer server = HttpServer.createSimpleServer();
+			// create jersey-grizzly server
+			ResourceConfig rc = new PackagesResourceConfig(
+					"org.imixs.crypt.rest");
+
+			// add json support
+			rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
+
+			HttpServer server = GrizzlyServerFactory.createHttpServer(
+					"http://localhost:8080", rc);
+
+			// add static pages handler
+			server.getServerConfiguration().addHttpHandler(
+					new StaticHttpHandler(getTemplatePath()), "/app");
+
+			
 			server.start();
 
 			System.out.println("Press any key to stop the server...");
@@ -73,4 +81,8 @@ public class Main {
 
 	}
 
+	private static String getTemplatePath() throws URISyntaxException {
+		return Main.class.getClassLoader().getResource("webapp")
+				.getPath();
+	}
 }

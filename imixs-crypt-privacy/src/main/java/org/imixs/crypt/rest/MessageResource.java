@@ -13,7 +13,7 @@ import org.imixs.crypt.xml.MessageItem;
  * @author rsoika
  *
  */
-@Path("/message")
+@Path("/rest")
 public class MessageResource {
 
 
@@ -30,6 +30,7 @@ public class MessageResource {
 	@GET 
     //@Produces("application/json")
 	@Produces("application/xml")
+	 @Path("/message")
     public MessageItem getClichedMessage() {
     	
     	MessageItem m=new MessageItem();
@@ -42,7 +43,7 @@ public class MessageResource {
 	
 	@GET 
     @Produces("application/json")
-    @Path("/json")
+    @Path("/message/json")
 	public MessageItem getJsonMessage() {
     	
     	MessageItem m=new MessageItem();

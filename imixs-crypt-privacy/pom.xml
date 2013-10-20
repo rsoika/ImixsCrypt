@@ -7,7 +7,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>imixs-crypt-privacy</artifactId>
-	
+
 	<properties>
 		<jersey.version>1.17.1</jersey.version>
 	</properties>
@@ -25,15 +25,33 @@
 			<artifactId>jersey-json</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
+		
 
+		<!-- Direct Dependency for grizzly 2.3.6 support -->
+		<dependency>
+			<groupId>org.glassfish.grizzly</groupId>
+			<artifactId>grizzly-framework</artifactId>
+			<version>2.3.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.grizzly</groupId>
+			<artifactId>grizzly-http</artifactId>
+			<version>2.3.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.grizzly</groupId>
+			<artifactId>grizzly-http-server</artifactId>
+			<version>2.3.6</version>
+		</dependency>
+		
+		
+		<!-- Imixs Security Core API -->
 		<dependency>
 			<groupId>org.imixs.security</groupId>
 			<artifactId>imixs-crypt-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
-
-
+		
 
 	</dependencies>
 </project>
