@@ -5,16 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.PrintStream;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -26,11 +19,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateCrtKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Random;
-import java.util.Scanner;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -40,30 +30,28 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
-import javax.xml.bind.DatatypeConverter;
 
 /**
- * Generats differnt types of key pairs
+ * This class provides methods to generate RSA Key pairs and encrypt or decrypt
+ * messages.
+ * 
+ * The class provides methods to write a key pair into the filesystem and load
+ * the public and private key form a file.
  * 
  * 
+ * Open Issues
  * 
- * 
- * 
- * Helpfull for open ssh
- * 
- * https://jsvnserve.googlecode.com/svn/trunk/src/main/java/com/googlecode/
- * jsvnserve/sshd/PublicKeyReaderUtil.java
- * 
- * 
- * http://stackoverflow.com/questions/19365940/convert-openssh-rsa-key-to-javax-
- * crypto-cipher-compatible-format
+ * ssh-rsa support: We need a solution to convert a key into ath ssh-rsa format.
+ * See:
+ * <code>http://stackoverflow.com/questions/3706177/how-to-generate-ssh-compatible-id-rsa-pub-from-java/10343300#10343300</code>
  * 
  * @author rsoika
  * 
  */
-public class ImixsKeyGenerator {
+public class ImixsRSAKeyUtil {
 
-	static String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
+	public static final String ALGORITHM = "RSA";
+	public static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	private static final int ITERATIONS = 1000;
 
 	/**
@@ -78,9 +66,8 @@ public class ImixsKeyGenerator {
 	 * @throws Exception
 	 */
 	public static void generateKeyPair(String privateKeyFileName,
-			String publicKeyFileName, String algorithm, String password)
-			throws Exception {
-		final KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
+			String publicKeyFileName, String password) throws Exception {
+		final KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ALGORITHM);
 		keyGen.initialize(1024);
 
 		final KeyPair key = keyGen.generateKeyPair();
@@ -100,8 +87,8 @@ public class ImixsKeyGenerator {
 	 * @return
 	 * @throws Exception
 	 */
-	public static PrivateKey getPemPrivateKey(String filename,
-			String algorithm, String password) throws Exception {
+	public static PrivateKey getPemPrivateKey(String filename, String password)
+			throws Exception {
 		File f = new File(filename);
 		FileInputStream fis = new FileInputStream(f);
 		DataInputStream dis = new DataInputStream(fis);
@@ -116,7 +103,7 @@ public class ImixsKeyGenerator {
 		// System.out.println("Private key\n"+privKeyPEM);
 
 		byte[] decoded = Base64Coder.decodeLines(privKeyPEM);
-		
+
 		/*
 		 * Check if password is used to encrypt the key
 		 */
@@ -124,17 +111,15 @@ public class ImixsKeyGenerator {
 			// Here we actually encrypt the key
 			decoded = passwordDecrypt(password.toCharArray(), decoded);
 		}
-		
 
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
-		KeyFactory kf = KeyFactory.getInstance(algorithm);
+		KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
 		PrivateKey key = kf.generatePrivate(spec);
 
 		return key;
 	}
 
-	public static PublicKey getPemPublicKey(String filename, String algorithm)
-			throws Exception {
+	public static PublicKey getPemPublicKey(String filename) throws Exception {
 		File f = new File(filename);
 		FileInputStream fis = new FileInputStream(f);
 		DataInputStream dis = new DataInputStream(fis);
@@ -150,10 +135,68 @@ public class ImixsKeyGenerator {
 		byte[] decoded = Base64Coder.decodeLines(publicKeyPEM);
 
 		X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
-		KeyFactory kf = KeyFactory.getInstance(algorithm);
+		KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
 		PublicKey key = kf.generatePublic(spec);
 
 		return key;
+	}
+
+	/**
+	 * Encrypt the plain text using public key.
+	 * 
+	 * @param text
+	 *            : original plain text
+	 * @param key
+	 *            :The public key
+	 * @return Encrypted text
+	 * @throws InvalidKeyException
+	 * @throws NoSuchPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 */
+	public static byte[] encrypt(String text, PublicKey key)
+			throws InvalidKeyException, NoSuchAlgorithmException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException {
+		byte[] cipherText = null;
+
+		// get an RSA cipher object and print the provider
+		final Cipher cipher = Cipher.getInstance(ALGORITHM);
+		// encrypt the plain text using the public key
+		cipher.init(Cipher.ENCRYPT_MODE, key);
+		cipherText = cipher.doFinal(text.getBytes());
+
+		return cipherText;
+	}
+
+	/**
+	 * Decrypt text using private key.
+	 * 
+	 * @param text
+	 *            :encrypted text
+	 * @param key
+	 *            :The private key
+	 * @return plain text
+	 * @throws NoSuchPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 */
+	public static String decrypt(byte[] text, PrivateKey key)
+			throws NoSuchAlgorithmException, NoSuchPaddingException,
+			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		byte[] dectyptedText = null;
+
+		// get an RSA cipher object and print the provider
+		final Cipher cipher = Cipher.getInstance(ALGORITHM);
+
+		// decrypt the text using the private key
+		cipher.init(Cipher.DECRYPT_MODE, key);
+		dectyptedText = cipher.doFinal(text);
+
+		return new String(dectyptedText);
 	}
 
 	/**
