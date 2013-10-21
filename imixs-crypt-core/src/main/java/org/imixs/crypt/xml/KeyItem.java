@@ -34,15 +34,15 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author rsoika
  * 
  */
-@XmlRootElement(name = "messageItem")
-public class MessageItem implements java.io.Serializable {
+@XmlRootElement(name = "keyItem")
+public class KeyItem implements java.io.Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String user;
+	private String key;
 	private String password;
-	private String message;
 
 	public String getUser() {
 		return user;
@@ -50,6 +50,14 @@ public class MessageItem implements java.io.Serializable {
 
 	public void setUser(String user) {
 		this.user = user;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public void setKey(String key) {
+		this.key = key;
 	}
 
 	public String getPassword() {
@@ -60,12 +68,5 @@ public class MessageItem implements java.io.Serializable {
 		this.password = password;
 	}
 
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
 
 }

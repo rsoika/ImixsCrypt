@@ -220,6 +220,7 @@ public class ImixsRSAKeyUtil {
 		 */
 		byte[] keyBytes = key.getEncoded();
 		if (password != null && !password.isEmpty()) {
+			System.out.println("Encrypting Key with password....");
 			// Here we actually encrypt the key
 			keyBytes = passwordEncrypt(password.toCharArray(), keyBytes);
 		}

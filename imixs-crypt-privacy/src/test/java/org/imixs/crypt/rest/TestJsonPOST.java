@@ -18,7 +18,7 @@ public class TestJsonPOST {
 	/**
 	 * <code>
 	 * 
-			{ "mypassword" }
+			{"user":"ralph.soika@imixs.com","key":"xxxxxxxxxxxxxxxxxxxxxxxxxx"}
      * </code>
 	 */
 	@Test
@@ -26,16 +26,10 @@ public class TestJsonPOST {
 
 		RestClient restClient = new RestClient();
 
-		String uri = "http://localhost:8080/rest/mykey";
+		String uri = "http://localhost:8080/rest/mykey/";
 		// create a json test string
-		String json = "{ \"mypassword\" }";
+		String json = "{\"user\":\"ralph.soika@imixs.com\",\"key\":\"\"}";
 		
-		
-		
-		
-		
-		
-		// http://www.jsonschema.net/
 		try {
 			int httpResult = restClient.postJsonEntity(uri, json);
 
@@ -50,6 +44,64 @@ public class TestJsonPOST {
 		}
 
 	}
+	
+	
+	
+	
+	/**
+	 * Test encrypt message
+	 * <code>
+	 * 
+			{"user":"ralph.soika@imixs.com","message":"abc"}
+     * </code>
+	 */
+	@Test
+	public void testPostEncryptDecryptJsonMessage() {
+
+		RestClient restClient = new RestClient();
+
+		String uri = "http://localhost:8080/rest/message/encrypt/";
+		// create a json test string
+		String json = "{\"user\":\"ralph.soika@imixs.com\",\"message\":\"Hallo Welt\"}";
+		
+		try {
+			int httpResult = restClient.postJsonEntity(uri, json);
+
+			String sContent=restClient.getContent();
+			
+			System.out.println(sContent);
+			// expected result 200
+			Assert.assertEquals(200, httpResult);
+			
+			
+			
+			// decrypt
+			
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	

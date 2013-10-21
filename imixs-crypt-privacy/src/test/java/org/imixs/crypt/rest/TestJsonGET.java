@@ -15,7 +15,7 @@ public class TestJsonGET {
 	 * Test get public key
 	 */
 	@Test
-	public void testPostReportData() {
+	public void testGetPublicKey() {
 
 		String uri = "http://localhost:8080/rest/mykey/public";
 		int httpResponse;
