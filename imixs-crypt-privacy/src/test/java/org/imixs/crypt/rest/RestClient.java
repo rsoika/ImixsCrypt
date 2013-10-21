@@ -38,9 +38,9 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.logging.Logger;
 
+import javax.ws.rs.core.MediaType;
+
 import org.imixs.crypt.deprecated.ImixsSecretKeyGenerator;
-
-
 
 /**
  * This ServiceClient is a WebService REST Client which encapsulate the
@@ -59,17 +59,18 @@ import org.imixs.crypt.deprecated.ImixsSecretKeyGenerator;
  */
 public class RestClient {
 
-
 	private String serviceEndpoint;
 
 	private String encoding = "UTF-8";
 
-	private int iLastHTTPResult = 0;
-	
-	private String content=null;
-	
-	private final static Logger logger = Logger.getLogger(RestClient.class.getName());
+	private String mediaType = MediaType.APPLICATION_JSON;
 
+	private int iLastHTTPResult = 0;
+
+	private String content = null;
+
+	private final static Logger logger = Logger.getLogger(RestClient.class
+			.getName());
 
 	public void setEncoding(String aEncoding) {
 		encoding = aEncoding;
@@ -83,9 +84,20 @@ public class RestClient {
 		this.content = content;
 	}
 
+	public String getMediaType() {
+		return mediaType;
+	}
+
+	public void setMediaType(String mediaType) {
+		this.mediaType = mediaType;
+	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
 	/**
-	 * This method posts an JSON String  to a
-	 * Rest Service URI Endpoint.
+	 * This method posts an JSON String to a Rest Service URI Endpoint.
 	 * 
 	 * 
 	 * @param uri
@@ -94,7 +106,41 @@ public class RestClient {
 	 *            - an Entity Collection
 	 * @return HTTPResult
 	 */
-	public int postJsonEntity(String uri, String aItemColString)
+	public int get(String uri) throws Exception {
+		URL obj = new URL(uri);
+		HttpURLConnection urlConnection = (HttpURLConnection) obj
+				.openConnection();
+
+		// optional default is GET
+		urlConnection.setRequestMethod("GET");
+
+		int responseCode = urlConnection.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + uri);
+		System.out.println("Response Code : " + responseCode);
+		readResponse(urlConnection);
+
+		return responseCode;
+	}
+
+	/**
+	 * This method posts an JSON String to a Rest Service URI Endpoint.
+	 * 
+	 * 
+	 * @param uri
+	 *            - Rest Endpoint RUI
+	 * @param entityCol
+	 *            - an Entity Collection
+	 * @return HTTPResult
+	 */
+	public int post(String uri, String aContent) throws Exception {
+		return sendData(uri, aContent, "POST");
+	}
+
+	public int delete(String uri, String aContent) throws Exception {
+		return sendData(uri, aContent, "DELETE");
+	}
+
+	private int sendData(String uri, String aContent, String aMethod)
 			throws Exception {
 		PrintWriter printWriter = null;
 
@@ -105,32 +151,36 @@ public class RestClient {
 
 			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
 					.openConnection();
-			urlConnection.setRequestMethod("POST");
+			urlConnection.setRequestMethod(aMethod);
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
 
-			
 			/** * HEADER ** */
-			urlConnection.setRequestProperty("Content-Type",
-					"application/json; charset=" + encoding);
+			urlConnection.setRequestProperty("Content-Type", mediaType
+					+ "; charset=" + encoding);
 
-			StringWriter writer = new StringWriter();
+			if (aContent != null && !aContent.isEmpty()) {
+				StringWriter writer = new StringWriter();
 
-			writer.write(aItemColString);
-			writer.flush();
+				writer.write(aContent);
+				writer.flush();
 
-			// compute length
-			urlConnection.setRequestProperty("Content-Length",
-					"" + Integer.valueOf(writer.toString().getBytes().length));
+				// compute length
+				urlConnection
+						.setRequestProperty(
+								"Content-Length",
+								""
+										+ Integer.valueOf(writer.toString()
+												.getBytes().length));
 
-			printWriter = new PrintWriter(new BufferedWriter(
-					new OutputStreamWriter(urlConnection.getOutputStream(),
-							encoding)));
+				printWriter = new PrintWriter(new BufferedWriter(
+						new OutputStreamWriter(urlConnection.getOutputStream(),
+								encoding)));
 
-			printWriter.write(writer.toString());
-			printWriter.close();
-
+				printWriter.write(writer.toString());
+				printWriter.close();
+			}
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
 				iLastHTTPResult = Integer.parseInt(sHTTPResponse.substring(9,
@@ -155,57 +205,16 @@ public class RestClient {
 		return iLastHTTPResult;
 	}
 
-	
-	
-	/**
-	 * This method posts an JSON String  to a
-	 * Rest Service URI Endpoint.
-	 * 
-	 * 
-	 * @param uri
-	 *            - Rest Endpoint RUI
-	 * @param entityCol
-	 *            - an Entity Collection
-	 * @return HTTPResult
-	 */
-	public int getJsonEntity(String uri)
-			throws Exception {
-		URL obj = new URL(uri);
-		HttpURLConnection urlConnection = (HttpURLConnection) obj.openConnection();
- 
-		// optional default is GET
-		urlConnection.setRequestMethod("GET");
- 	
-		int responseCode = urlConnection.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + uri);
-		System.out.println("Response Code : " + responseCode);
-		readResponse(urlConnection);
-		
-		return responseCode;
-	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	/**
 	 * Put the resonse string into the content property
+	 * 
 	 * @param urlConnection
 	 * @throws IOException
 	 */
 	private void readResponse(URLConnection urlConnection) throws IOException {
 		// get content of result
 		StringWriter writer = new StringWriter();
-		BufferedReader in=null;
+		BufferedReader in = null;
 		try {
 			in = new BufferedReader(new InputStreamReader(
 					urlConnection.getInputStream()));
@@ -215,14 +224,13 @@ public class RestClient {
 				writer.write(inputLine);
 			}
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 		} finally {
-			if (in!=null)
+			if (in != null)
 				in.close();
 		}
-		
-		
+
 		setContent(writer.toString());
 
 	}

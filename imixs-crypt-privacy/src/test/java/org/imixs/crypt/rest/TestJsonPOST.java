@@ -26,12 +26,12 @@ public class TestJsonPOST {
 
 		RestClient restClient = new RestClient();
 
-		String uri = "http://localhost:8080/rest/mykey/";
+		String uri = "http://localhost:8080/rest/mykey/key";
 		// create a json test string
 		String json = "{\"user\":\"ralph.soika@imixs.com\",\"key\":\"\"}";
 		
 		try {
-			int httpResult = restClient.postJsonEntity(uri, json);
+			int httpResult = restClient.post(uri, json);
 
 			String sContent=restClient.getContent();
 			// expected result 200
@@ -65,7 +65,7 @@ public class TestJsonPOST {
 		String json = "{\"user\":\"ralph.soika@imixs.com\",\"message\":\"Hallo Welt\"}";
 		
 		try {
-			int httpResult = restClient.postJsonEntity(uri, json);
+			int httpResult = restClient.post(uri, json);
 
 			String sContent=restClient.getContent();
 			

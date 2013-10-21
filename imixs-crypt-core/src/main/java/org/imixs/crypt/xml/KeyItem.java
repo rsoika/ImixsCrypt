@@ -42,7 +42,6 @@ public class KeyItem implements java.io.Serializable {
 	private static final long serialVersionUID = 1L;
 	private String user;
 	private String key;
-	private String password;
 
 	public String getUser() {
 		return user;
@@ -60,13 +59,6 @@ public class KeyItem implements java.io.Serializable {
 		this.key = key;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
+	
 
 }

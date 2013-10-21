@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsRSAKeyUtil;
+import org.imixs.crypt.server.CryptSession;
 import org.imixs.crypt.xml.MessageItem;
 
 /**
@@ -25,9 +26,9 @@ import org.imixs.crypt.xml.MessageItem;
  * 
  */
 @Path("/rest/message")
-public class MessageResource {
+public class MessageService {
 
-	private final static Logger logger = Logger.getLogger(MyKeyResource.class
+	private final static Logger logger = Logger.getLogger(KeyService.class
 			.getName());
 
 	@GET
@@ -46,7 +47,7 @@ public class MessageResource {
 	 * @param keyItem
 	 * 
 	 */
-	@POST
+	@POST 
 	@Path("/encrypt")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -117,7 +118,7 @@ public class MessageResource {
 		PrivateKey privateKey;
 		try {
 			privateKey = ImixsRSAKeyUtil.getPemPrivateKey(getFilename(message
-					.getUser()) + "",message.getPassword());
+					.getUser()) + "",CryptSession.getInstance().getPassword());
 
 			String decrypted= ImixsRSAKeyUtil.decrypt(message.getMessage().getBytes(),
 					privateKey);

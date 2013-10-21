@@ -1,0 +1,21 @@
+Privacy Server
+~~~~~~~~~~~~~~
+
+ The privacy server component provides a local web server as a user frontend for 
+ managing imixs crypt.
+ 
+ The server should never run other than on localhost (127.0.0.1)
+ The server provides a set of rest service methods which can be called from 
+ a client. Typical this is a jquery based web application.
+ 
+*Session Management
+~~~~~~~~~~~~~~
+ As the primary key pair is password protected (private key) a client can start
+ a local session to unlock the private key. 
+ There for a local session is started holding the private key.
+ 
+ If the message is closed the private key is droped. 
+ 
+ 
+   
+ 

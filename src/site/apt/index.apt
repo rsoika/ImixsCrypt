@@ -1,0 +1,51 @@
+Imixs Open Crypt Server
+~~~~~~~~~~~~~~
+
+
+ In the year 2013 we all learned that we can not trust into the open Internet. 
+ Things which should be secure like private communication or shared documents in a open space
+ can be infiltriert from others we did not know. 
+
+*Why That is a problem? 
+~~~~~~~~~~~~~~ 
+ In the beginning of the internet in year 19.. that was not the problem. The internet was founded 
+ to build a open plattform to share any kind of information. without borders and without hidden 
+ cermercial back thoghts.
+ Today we use the intert as a kommuination or business plattform. And we expect that the internet 
+ is secure and we can trust it. But we learnd that isn't sure. 
+
+*So what can we do? Why?
+~~~~~~~~~~~~~~
+ We beleive that privacy and security are some of the valuablest things unsing the internet today. 
+ To give yout back the control of your own privacy we started the project 'Open Crypt Server'. 
+ The goals of this project is to provide every internet user with a peace of open source software 
+ to control his own securtiy and privacy. And as this softwarere is a server it becomes part of the
+ internet itself. This means Open Crypt Server is a server node which becomes part of your communication 
+ through the interent. But Open Crypt Server is absolut privacy. It runs local on your onw computer. 
+ It secures and encrypts your Information before you give them back into the internet. This is the way 
+ of a scecure and trusable communication through the open internet. 
+
+*How it works?
+~~~~~~~~~~~~~~ 
+ The base concept of Open Crypt Server is the fact that securtiy and privatcy with internet technology 
+ is not a rocet sience. There are a lot of technologiey and open algorythmes to secure  and encrypt 
+ information. One of the most trusable and one of the easiest algoriythm is the RSA. This security 
+ algorythm is based on a concept of two keys. A private key and a public key. Every person which ows 
+ one of the both key can secure a message which is only decryptibe by the person how owns the second key.
+  
+ Knowing that we should not trust any server in the open internt we should never send a private message
+  throudg the itnenet. And also we should not store any private message on server in the internet. 
+  We learnd that this is not a god idear because we can not trust all the organisation, govermanetns 
+  and persons connected to such a server.
+ And for that reason Open Crypt Server runs local and encrypts your private message localy only on your 
+ computer. 
+ After the message is ecnrypted the open Crypt srver sends it back into the internet
+ This is the base concept
+
+
+
+
+*What is it?
+~~~~~~~~~~~~~~
+
+

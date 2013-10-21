@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Imixs Workflow API">
+
+
+
+	<skin>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-maven-skin</artifactId>
+		<version>0.0.4</version>
+	</skin>
+
+
+	<body>
+		<links>
+			<item name="Home" href="./index.html" />
+		</links>
+
+
+		<menu name="Home" href="index.html">
+
+			<item name="Private Server" href="private_server.html" />
+		</menu>
+
+
+	</body>
+
+</project>
