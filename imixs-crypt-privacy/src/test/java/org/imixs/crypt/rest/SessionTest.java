@@ -23,7 +23,7 @@ public class SessionTest {
  
 		RestClient restClient = new RestClient();
  
-		String uri = "http://localhost:8080/rest/session/open";
+		String uri = "http://localhost:8080/rest/session";
 		// create a json test string
 		String value = "abcdefg";
 		
@@ -35,8 +35,6 @@ public class SessionTest {
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 			
-		Assert.assertEquals(value,CryptSession.getInstance().getPassword());
-		
 			
 			
 		} catch (Exception e) {
@@ -59,7 +57,7 @@ public class SessionTest {
 
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.TEXT_PLAIN);
-		String uri = "http://localhost:8080/rest/session/close";
+		String uri = "http://localhost:8080/rest/session";
 	
 		
 		try { 

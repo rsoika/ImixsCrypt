@@ -35,7 +35,7 @@ public class KeyService {
 	@GET
 	@Path("/public/{user}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public KeyItem getPublic(@PathParam("user") String user) {
+	public KeyItem getPublicKey(@PathParam("user") String user) {
 		
 		// lower case
 		user=user.toLowerCase();
@@ -48,7 +48,7 @@ public class KeyService {
 	}
 
 	/**
-	 * This method post a keyItem. The keyItem must contain a user. The value
+	 * This method post a keyItem with a public key. The keyItem must contain a user. The value
 	 * key is optional. If the key is empty the method will generate a new key
 	 * for the user.
 	 * 
@@ -56,10 +56,10 @@ public class KeyService {
 	 * 
 	 */
 	@POST
-	@Path("/key")
+	@Path("/public")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putKey(KeyItem akey) {
+	public Response putPublicKey(KeyItem akey) {
 
 		// validate key
 		if (akey == null || akey.getUser().isEmpty()) {

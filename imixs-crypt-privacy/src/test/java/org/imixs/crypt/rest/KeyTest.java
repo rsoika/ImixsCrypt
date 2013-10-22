@@ -23,7 +23,7 @@ public class KeyTest {
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = "http://localhost:8080/rest/session/open";
+		String uri = "http://localhost:8080/rest/session";
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
@@ -43,7 +43,7 @@ public class KeyTest {
 	public void teardown() {
 
 		RestClient restClient = new RestClient();
-		String uri = "http://localhost:8080/rest/session/close";
+		String uri = "http://localhost:8080/rest/session";
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.delete(uri, "");

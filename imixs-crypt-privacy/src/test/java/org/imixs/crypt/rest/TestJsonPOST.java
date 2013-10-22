@@ -26,7 +26,7 @@ public class TestJsonPOST {
 
 		RestClient restClient = new RestClient();
 
-		String uri = "http://localhost:8080/rest/mykey/key";
+		String uri = "http://localhost:8080/rest/keys/public";
 		// create a json test string
 		String json = "{\"user\":\"ralph.soika@imixs.com\",\"key\":\"\"}";
 		
