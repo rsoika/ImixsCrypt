@@ -1,13 +1,24 @@
 package org.imixs.crypt.server;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Logger;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import org.imixs.crypt.ImixsRSAKeyUtil;
 
 public class CryptSession {
 
-	protected String password;
+	private String password;
+	private String keyPath;
 
 	private static CryptSession instance = null;
 
@@ -15,7 +26,8 @@ public class CryptSession {
 			.getName());
 
 	protected CryptSession() {
-		// Exists only to defeat instantiation.
+		// generate defaut key path
+		keyPath = "src/test/resources/";
 	}
 
 	public static CryptSession getInstance() {
@@ -33,6 +45,14 @@ public class CryptSession {
 		this.password = password;
 	}
 
+	public String getKeyPath() {
+		return keyPath;
+	}
+
+	public void setKeyPath(String keyPath) {
+		this.keyPath = keyPath;
+	}
+
 	/**
 	 * generates a new key pair with the current password
 	 * 
@@ -40,19 +60,33 @@ public class CryptSession {
 	 */
 	public void generateKeyPair() throws Exception {
 		logger.info("[CryptSession] generate new keypair....");
-		ImixsRSAKeyUtil.generateKeyPair("src/test/resources/id",
-				"src/test/resources/id.pub", password);
+		ImixsRSAKeyUtil.generateKeyPair(keyPath + "id", keyPath + "id.pub",
+				password);
 	}
+
+	
 
 	/**
 	 * returns the public key
 	 * 
 	 * @throws Exception
 	 */
-	public PublicKey getPublicKey() throws Exception {
+	public PublicKey getPublicKey() {
 
-		return ImixsRSAKeyUtil
-				.getPemPublicKey("src/test/resources/id.pub");
+		try {
+			return ImixsRSAKeyUtil.getPemPublicKey(keyPath + "id.pub");
+		} catch (NoSuchAlgorithmException e) {
+			logger.warning("[CryptSession] " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		} catch (InvalidKeySpecException e) {
+			logger.warning("[CryptSession] " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		} catch (IOException e) {
+			logger.info("[CryptSession] no public key found!");
+			return null;
+		}
 
 	}
 

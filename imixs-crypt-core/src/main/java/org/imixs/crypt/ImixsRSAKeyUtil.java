@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -85,10 +86,20 @@ public class ImixsRSAKeyUtil {
 	 * @param filename
 	 * @param algorithm
 	 * @return
-	 * @throws Exception
+	 * @throws IOException
+	 * @throws NoSuchPaddingException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 */
 	public static PrivateKey getPemPrivateKey(String filename, String password)
-			throws Exception {
+			throws IOException, InvalidKeyException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InvalidAlgorithmParameterException,
+			IllegalBlockSizeException, BadPaddingException,
+			NoSuchPaddingException {
 		File f = new File(filename);
 		FileInputStream fis = new FileInputStream(f);
 		DataInputStream dis = new DataInputStream(fis);
@@ -119,7 +130,31 @@ public class ImixsRSAKeyUtil {
 		return key;
 	}
 
-	public static PublicKey getPemPublicKey(String filename) throws Exception {
+	/**
+	 * Delete key pair
+	 * 
+	 * @param privateKeyFileName
+	 * @param publicKeyFileName
+	 */
+	public static void deleteKeyPair(String privateKeyFileName,
+			String publicKeyFileName) {
+		File keyFile = null;
+
+		if (privateKeyFileName != null && !privateKeyFileName.isEmpty()) {
+			keyFile = new File(privateKeyFileName);
+			if (keyFile.exists())
+				keyFile.delete();
+		}
+		if (publicKeyFileName != null && !publicKeyFileName.isEmpty()) {
+			keyFile = new File(publicKeyFileName);
+			if (keyFile.exists())
+				keyFile.delete();
+		}
+	}
+
+	public static PublicKey getPemPublicKey(String filename)
+			throws IOException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		File f = new File(filename);
 		FileInputStream fis = new FileInputStream(f);
 		DataInputStream dis = new DataInputStream(fis);
@@ -227,7 +262,7 @@ public class ImixsRSAKeyUtil {
 
 		String sEncodedKey = Base64Coder.encodeLines(keyBytes);
 
-		System.out.println("Write Key : ");
+		System.out.println("Write KeyFile: "+keyFileName);
 		System.out.println("");
 		System.out.println(sEncodedKey);
 

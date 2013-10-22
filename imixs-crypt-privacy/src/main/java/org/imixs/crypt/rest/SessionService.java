@@ -1,8 +1,15 @@
 package org.imixs.crypt.rest;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Logger;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -12,6 +19,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.server.CryptSession;
@@ -30,73 +38,48 @@ public class SessionService {
 			.getName());
 
 	/**
-	 * This method post a password and opens a new session
+	 * This method post a password and stores it into the local vm's
+	 * CryptSession instance. The password will be stored in the local instance
+	 * of the CryptSession.
 	 * 
-	 * @param keyItem
+	 * The Method verifies if a local key pair exists. If not the method will
+	 * generate a new key pair, encrypted with the given password.
 	 * 
+	 * @param password
+	 *            - password to be set
 	 */
 	@POST
 	@Path("/session")
 	@Consumes("text/plain")
-	public Response openSession(String password) {
-		// validate key
-		if (password == null || password.isEmpty()) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).build();
-		}
+	public Response setPrivateKeyPassword(String password) {
+
 		CryptSession.getInstance().setPassword(password);
-		logger.info("Session opened");
-		// success HTTP 200
+		if (password != null && !password.isEmpty()) {
+
+			// verify if a key pair exists
+			PublicKey publicKey = CryptSession.getInstance().getPublicKey();
+			if (publicKey == null) {
+				logger.info("[SessionService] generate new KeyPair...");
+
+				try {
+					CryptSession.getInstance().generateKeyPair();
+				} catch (Exception e) {
+					e.printStackTrace();
+					return Response
+							.status(Response.Status.INTERNAL_SERVER_ERROR)
+							.type(MediaType.TEXT_PLAIN).build();
+				}
+			}
+			logger.info("Session opened");
+
+		} else {
+			logger.info("Session closed");
+		}// success HTTP 200
 		return Response.ok(MediaType.TEXT_PLAIN).build();
 
 	}
 
-	/**
-	 * Closes a session
-	 * 
-	 * @return
-	 */
-	@DELETE
-	@Path("/session")
-	@Consumes(MediaType.TEXT_PLAIN)
-	public Response closeSession() {
-
-		CryptSession.getInstance().setPassword(null);
-		logger.info("Session closed");
-		// success HTTP 200
-		return Response.ok(MediaType.TEXT_PLAIN).build();
-
-	}
-
-	/**
-	 * This method creates a new Key Pair
-	 * 
-	 * @return
-	 */
-	@PUT
-	@Path("/session")
-	@Consumes(MediaType.TEXT_PLAIN)
-	public Response createKeyPair(String password) {
-
-		if (password == null || password.isEmpty()) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).build();
-		}
-		CryptSession.getInstance().setPassword(password);
-
-		try {
-			CryptSession.getInstance().generateKeyPair();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-					.type(MediaType.TEXT_PLAIN).build();
-		}
-		logger.info("Session opened");
-		// success HTTP 200
-		return Response.ok(MediaType.TEXT_PLAIN).build();
-
-	}
-
+	
 	/**
 	 * Returns the public key. If not yet created the method returns a error
 	 * code
@@ -104,32 +87,32 @@ public class SessionService {
 	 * @return
 	 */
 	@GET
-	@Path("/session/public")
+	@Path("/session")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getPublicKey() {
-		PublicKey publicKey=null;
+		PublicKey publicKey = null;
+		KeyItem key = new KeyItem();
+
 		try {
-			 publicKey = CryptSession.getInstance().getPublicKey();
-			if (publicKey==null)  {
+			publicKey = CryptSession.getInstance().getPublicKey();
+			if (publicKey == null) {
 				logger.info("KeyPair not yet created");
-				
+
 				return Response.status(Response.Status.ACCEPTED).entity(null)
 						.type(MediaType.APPLICATION_JSON).build();
-				
-			
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(null)
-					.type(MediaType.APPLICATION_JSON).build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(null).type(MediaType.APPLICATION_JSON).build();
 		}
 		// lower case
 
 		// Return the key
-		KeyItem key = new KeyItem();
 		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
 		key.setUser("");
-		
+
 		return Response.status(Response.Status.OK).entity(key)
 				.type(MediaType.APPLICATION_JSON).build();
 

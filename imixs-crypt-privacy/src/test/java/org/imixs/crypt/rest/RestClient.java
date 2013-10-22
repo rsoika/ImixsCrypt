@@ -143,8 +143,9 @@ public class RestClient {
 	private int sendData(String uri, String aContent, String aMethod)
 			throws Exception {
 		PrintWriter printWriter = null;
-
 		HttpURLConnection urlConnection = null;
+		boolean hasOutput = true;
+
 		try {
 			serviceEndpoint = uri;
 			iLastHTTPResult = 500;
@@ -152,6 +153,9 @@ public class RestClient {
 			urlConnection = (HttpURLConnection) new URL(serviceEndpoint)
 					.openConnection();
 			urlConnection.setRequestMethod(aMethod);
+			if ("DELETE".equals(aMethod))
+				hasOutput = false;
+
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
 			urlConnection.setAllowUserInteraction(false);
@@ -160,7 +164,8 @@ public class RestClient {
 			urlConnection.setRequestProperty("Content-Type", mediaType
 					+ "; charset=" + encoding);
 
-			if (aContent != null && !aContent.isEmpty()) {
+			if ( aContent != null
+					&& !aContent.isEmpty()) {
 				StringWriter writer = new StringWriter();
 
 				writer.write(aContent);
@@ -180,6 +185,7 @@ public class RestClient {
 
 				printWriter.write(writer.toString());
 				printWriter.close();
+
 			}
 			String sHTTPResponse = urlConnection.getHeaderField(0);
 			try {
@@ -191,7 +197,8 @@ public class RestClient {
 			}
 
 			// get content of result
-			readResponse(urlConnection);
+			if (hasOutput)
+				readResponse(urlConnection);
 
 		} catch (Exception ioe) {
 			// ioe.printStackTrace();

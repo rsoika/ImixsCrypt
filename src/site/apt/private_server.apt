@@ -5,16 +5,32 @@ Privacy Server
  managing imixs crypt.
  
  The server should never run other than on localhost (127.0.0.1)
+ 
  The server provides a set of rest service methods which can be called from 
- a client. Typical this is a jquery based web application.
+ a client. Typical this is a jquery based local web application.
  
-*Session Management
+*SessionService
 ~~~~~~~~~~~~~~
- As the primary key pair is password protected (private key) a client can start
- a local session to unlock the private key. 
- There for a local session is started holding the private key.
- 
- If the message is closed the private key is droped. 
+ The SessionService provides a REST API to manage the users local key pair and
+ open or close a crypt session.
+ Because the primary key pair is password protected (private key) a client need to
+ start a session to unlock the private key. After that the client can decrypt 
+ data with his local RSA Key.  
+ The password for the local key par is stored in-memory.
+ If the session is closed the private key is dropped. 
+  
+*---------------------*----------*---------------------------------------* 
+|| Resource URI       || Method  || Description                         ||
+*---------------------+----------+---------------------------------------+
+| /session            |GET       |Returns the local public key if        |
+|                     |          |available.                             |
+|                     |          |HTTP-202=no key found, HTTP-200=key found  |
+*---------------------+----------+---------------------------------------+
+| /session            |POST      |Posting the private keys password opens|
+|                     |          | a session, posting an empty key closes the session.  |
+|                     |          |If no key-pair still exits and a password was provided |
+|                     |          | then a new local key pair  will be generated.      |
+*---------------------+----------+---------------------------------------+
  
  
    
