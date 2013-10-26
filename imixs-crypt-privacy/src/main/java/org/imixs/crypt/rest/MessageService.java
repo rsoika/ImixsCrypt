@@ -30,6 +30,8 @@ public class MessageService {
 	private final static Logger logger = Logger.getLogger(KeyService.class
 			.getName());
 
+	
+	
 	@GET
 	@Produces("text/plain")
 	@Path("/world")

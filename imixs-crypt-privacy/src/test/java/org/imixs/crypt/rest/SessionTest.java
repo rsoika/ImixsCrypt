@@ -19,8 +19,7 @@ import org.junit.Test;
 public class SessionTest {
 	String PASSWORD = "abc";
 	String HOST = "http://127.0.0.1:4040";
-	String KEY_PATH="src/test/resources";
-
+	
 	/**
 	 * generate key pair
 	 */
@@ -76,7 +75,6 @@ public class SessionTest {
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, value);
-			String sContent = restClient.getContent();
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 		} catch (Exception e) {
