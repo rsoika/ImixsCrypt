@@ -16,9 +16,9 @@ public interface ImixsCryptKeyUtil {
 
 	public PublicKey getPublicKey(String filename) throws ImixsCryptException;
 
-	public byte[] encrypt(String text, PublicKey key) throws ImixsCryptException;
+	public byte[] encrypt(byte[] data, PublicKey key) throws ImixsCryptException;
 
-	public String decrypt(byte[] text, PrivateKey key) throws ImixsCryptException;
+	public byte[] decrypt(byte[] encryptedData, PrivateKey key) throws ImixsCryptException;
 
 	public PrivateKey getPrivateKey(String filename, String password)
 			throws ImixsCryptException;

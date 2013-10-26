@@ -9,6 +9,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.ImixsCryptKeyUtil;
 
@@ -30,11 +31,10 @@ class CryptSession {
 	public static String IMIXS_PROPERTY_FILE = "imixs.properties";
 
 	public static String PROPERTY_KEY_UTIL = "keyutil";
-	
-	private String rootPath=null;
-	private String password=null;
 
-	
+	private String rootPath = null;
+	private String password = null;
+
 	private static String DEFAULT_ROOT_PATH = "src/test/resources/";
 	private static String DEFAULT_KEY_UTIL = "org.imixs.crypt.ImixsRSAKeyUtil";
 	private Properties properties;
@@ -45,31 +45,30 @@ class CryptSession {
 	private final static Logger logger = Logger.getLogger(CryptSession.class
 			.getName());
 
-	
 	/**
 	 * Default Constructor
 	 */
 	protected CryptSession() {
 		init();
 	}
-	
-	
+
 	/**
 	 * Constructor with a default rootPath setting
-	 * @param rootPath for data storage
+	 * 
+	 * @param rootPath
+	 *            for data storage
 	 */
 	protected CryptSession(String rootPath) {
 		this();
 		setRootPath(rootPath);
 	}
 
-	
-	
 	@SuppressWarnings("unchecked")
 	protected void init() {
 		// read properties
 		try {
-			properties.load(new FileInputStream(getRootPath()+IMIXS_PROPERTY_FILE));
+			properties.load(new FileInputStream(getRootPath()
+					+ IMIXS_PROPERTY_FILE));
 			if (properties == null) {
 				logger.warning("[CryptSession] No imixs.properties file found!");
 				createDefaultProperties();
@@ -112,8 +111,8 @@ class CryptSession {
 	 * @return
 	 */
 	protected String getRootPath() {
-		if (rootPath==null)
-			rootPath=DEFAULT_ROOT_PATH;
+		if (rootPath == null)
+			rootPath = DEFAULT_ROOT_PATH;
 		return rootPath;
 	}
 
@@ -180,8 +179,8 @@ class CryptSession {
 			logger.info("[CryptSession] no trusted key found");
 			// try loading from public key
 			if (publicKey == null) {
-				publicKey = keyUtil.getPublicKey(getRootPath()
-						+ "keys/public/" + userid + ".pub");
+				publicKey = keyUtil.getPublicKey(getRootPath() + "keys/public/"
+						+ userid + ".pub");
 			}
 			return publicKey;
 
@@ -220,7 +219,8 @@ class CryptSession {
 	}
 
 	/**
-	 * Encrypts a message with the local public key
+	 * Encrypts a message String with the local public key. The encrypted byte
+	 * array will be returned Base64 encoded.
 	 * 
 	 * 
 	 * @param message
@@ -229,12 +229,10 @@ class CryptSession {
 	 * @throws InvalidKeySpecException
 	 */
 	protected String ecryptLocal(String message) {
-
 		try {
 			PublicKey publicKey = keyUtil.getPublicKey(getRootPath()
 					+ "keys/id.pub");
-			byte[] encrypted = keyUtil.encrypt(message, publicKey);
-			return new String(encrypted);
+			return keyUtil.encrypt(message, publicKey);
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
 			e.printStackTrace();
@@ -243,7 +241,8 @@ class CryptSession {
 	}
 
 	/**
-	 * Encrypts a message with the local private key
+	 * Decrypts a message with the local private key.
+	 * The encrypted message is 
 	 * 
 	 * @param message
 	 * @return
@@ -255,9 +254,8 @@ class CryptSession {
 			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/id",
 					password);
 
-			String decrypted = keyUtil.decrypt(message.getBytes(), privateKey);
+			return keyUtil.decrypt(message, privateKey);
 
-			return decrypted;
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
 			e.printStackTrace();
@@ -277,7 +275,8 @@ class CryptSession {
 		properties.setProperty(PROPERTY_KEY_UTIL, DEFAULT_KEY_UTIL);
 		// save properties to project root folder
 		try {
-			properties.store(new FileOutputStream(getRootPath()+IMIXS_PROPERTY_FILE), null);
+			properties.store(new FileOutputStream(getRootPath()
+					+ IMIXS_PROPERTY_FILE), null);
 			logger.info("[CryptSession] imixs.properties created successfull");
 		} catch (Exception e1) {
 			logger.severe("[CryptSession] unable to generate imixs.properties! Please check file access!");

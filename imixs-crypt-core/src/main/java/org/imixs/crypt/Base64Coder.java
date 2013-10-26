@@ -27,7 +27,9 @@ public class Base64Coder {
     */
     public static String encodeString (String s) {
        return new String(encode(s.getBytes())); }
-
+    
+    
+   
     /**
     * Encodes a byte array into Base 64 format and breaks the output into lines of 76 characters.
     * This method is compatible with <code>sun.misc.BASE64Encoder.encodeBuffer(byte[])</code>.
@@ -67,7 +69,9 @@ public class Base64Coder {
     * @return    A character array containing the Base64 encoded data.
     */
     public static char[] encode (byte[] in) {
-       return encode(in, 0, in.length); }
+       return encode(in, 0, in.length); 
+       
+    }
 
     /**
     * Encodes a byte array into Base64 format.

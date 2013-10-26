@@ -39,13 +39,17 @@ import javax.crypto.spec.PBEParameterSpec;
  * The class provides methods to write a key pair into the filesystem and load
  * the public and private key form a file.
  * 
+ * 
+ * @see Encrypting and decrypting large data using Java and RSA
+ *      http://coding.westreicher.org/?p=23
+ * 
  * @author rsoika
  * 
  */
 public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 
 	private static final String ALGORITHM = "RSA";
-private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
+	private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	private static final int ITERATIONS = 1000;
 
 	/**
@@ -67,7 +71,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	 * @throws Exception
 	 */
 	public void generateKeyPair(String privateKeyFileName,
-			String publicKeyFileName, String password) throws ImixsCryptException {
+			String publicKeyFileName, String password)
+			throws ImixsCryptException {
 		KeyPairGenerator keyGen;
 		try {
 			keyGen = KeyPairGenerator.getInstance(ALGORITHM);
@@ -79,7 +84,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 
 			writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
 		} catch (NoSuchAlgorithmException e) {
-			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+			throw new ImixsCryptException(
+					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 
 		} catch (InvalidKeyException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
@@ -149,7 +155,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 		} catch (InvalidKeyException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		} catch (NoSuchAlgorithmException e) {
-			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+			throw new ImixsCryptException(
+					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 		} catch (InvalidAlgorithmParameterException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		} catch (IllegalBlockSizeException e) {
@@ -192,7 +199,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
 
 		} catch (NoSuchAlgorithmException e) {
-			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+			throw new ImixsCryptException(
+					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 		} catch (InvalidKeySpecException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 
@@ -212,7 +220,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	 * @return Encrypted text
 	 * @throws ImixsCryptException
 	 */
-	public byte[] encrypt(String text, PublicKey key) throws ImixsCryptException {
+	public byte[] encrypt(byte[] data, PublicKey key)
+			throws ImixsCryptException {
 		byte[] cipherText = null;
 
 		// get an RSA cipher object and print the provider
@@ -221,9 +230,14 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 			cipher = Cipher.getInstance(ALGORITHM);
 			// encrypt the plain text using the public key
 			cipher.init(Cipher.ENCRYPT_MODE, key);
-			cipherText = cipher.doFinal(text.getBytes());
+
+			// to decrypt text longer the 117 bytes we can not use the simple
+			// cipher.
+			cipherText = blockCipher(cipher, data, Cipher.ENCRYPT_MODE);
+
 		} catch (NoSuchAlgorithmException e) {
-			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+			throw new ImixsCryptException(
+					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 		} catch (NoSuchPaddingException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		} catch (InvalidKeyException e) {
@@ -247,7 +261,8 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	 * @return plain text
 	 * @throws ImixsCryptException
 	 */
-	public String decrypt(byte[] text, PrivateKey key) throws ImixsCryptException {
+	public byte[] decrypt(byte[] encryptedData, PrivateKey key)
+			throws ImixsCryptException {
 		byte[] dectyptedText = null;
 
 		// get an RSA cipher object and print the provider
@@ -256,9 +271,14 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 			cipher = Cipher.getInstance(ALGORITHM);
 			// decrypt the text using the private key
 			cipher.init(Cipher.DECRYPT_MODE, key);
-			dectyptedText = cipher.doFinal(text);
+
+			// to decrypt text longer the 117 bytes we can not use the simple
+			// cipher.
+			dectyptedText = blockCipher(cipher, encryptedData, Cipher.DECRYPT_MODE);
+
 		} catch (NoSuchAlgorithmException e) {
-			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+			throw new ImixsCryptException(
+					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 		} catch (NoSuchPaddingException e) {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		} catch (InvalidKeyException e) {
@@ -269,7 +289,7 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		}
 
-		return new String(dectyptedText);
+		return dectyptedText;
 	}
 
 	/**
@@ -281,7 +301,7 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	public static void deleteKeyPair(String privateKeyFileName,
 			String publicKeyFileName) {
 		File keyFile = null;
-	
+
 		if (privateKeyFileName != null && !privateKeyFileName.isEmpty()) {
 			keyFile = new File(privateKeyFileName);
 			if (keyFile.exists())
@@ -431,6 +451,88 @@ private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 		// Perform the actual decryption.
 		cipher.init(Cipher.DECRYPT_MODE, key, paramSpec);
 		return cipher.doFinal(remainingCiphertext);
+	}
+
+	/**
+	 * From http://coding.westreicher.org/?p=23
+	 * 
+	 * @param bytes
+	 * @param mode
+	 * @return
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 */
+	private byte[] blockCipher(Cipher cipher, byte[] bytes, int mode)
+			throws IllegalBlockSizeException, BadPaddingException {
+
+		// if we encrypt we use 100 byte long blocks. Decryption requires 128
+		// byte long blocks (because of RSA)
+		int length = (mode == Cipher.ENCRYPT_MODE) ? 100 : 128;
+
+		// test if block size is not grater then length....
+		if (bytes.length < length) {
+			// use simple block cipher....
+			return cipher.doFinal(bytes);
+		}
+
+		// encrypt and decrypt in multiple blocks...
+
+		// string initialize 2 buffers.
+		// scrambled will hold intermediate results
+		byte[] scrambled = new byte[0];
+
+		// toReturn will hold the total result
+		byte[] toReturn = new byte[0];
+
+		// another buffer. this one will hold the bytes that have to be modified
+		// in this step
+		byte[] buffer = new byte[length];
+
+		for (int i = 0; i < bytes.length; i++) {
+
+			// if we filled our buffer array we have our block ready for de- or
+			// encryption
+			if ((i > 0) && (i % length == 0)) {
+				// execute the operation
+				scrambled = cipher.doFinal(buffer);
+				// add the result to our total result.
+				toReturn = append(toReturn, scrambled);
+				// here we calculate the length of the next buffer required
+				int newlength = length;
+
+				// if newlength would be longer than remaining bytes in the
+				// bytes array we shorten it.
+				if (i + length > bytes.length) {
+					newlength = bytes.length - i;
+				}
+				// clean the buffer array
+				buffer = new byte[newlength];
+			}
+			// copy byte into our buffer.
+			buffer[i % length] = bytes[i];
+		}
+
+		// this step is needed if we had a trailing buffer. should only happen
+		// when encrypting.
+		// example: we encrypt 110 bytes. 100 bytes per run means we "forgot"
+		// the last 10 bytes. they are in the buffer array
+		scrambled = cipher.doFinal(buffer);
+
+		// final step before we can return the modified data.
+		toReturn = append(toReturn, scrambled);
+
+		return toReturn;
+	}
+
+	private byte[] append(byte[] prefix, byte[] suffix) {
+		byte[] toReturn = new byte[prefix.length + suffix.length];
+		for (int i = 0; i < prefix.length; i++) {
+			toReturn[i] = prefix[i];
+		}
+		for (int i = 0; i < suffix.length; i++) {
+			toReturn[i + prefix.length] = suffix[i];
+		}
+		return toReturn;
 	}
 
 }
