@@ -1,5 +1,6 @@
 package org.imixs.crypt.rest;
 
+import org.imixs.crypt.RestClient;
 import org.junit.Assert;
 import org.junit.Test;
 

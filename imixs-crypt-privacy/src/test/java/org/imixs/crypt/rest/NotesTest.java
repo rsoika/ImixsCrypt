@@ -2,6 +2,7 @@ package org.imixs.crypt.rest;
 
 import javax.ws.rs.core.MediaType;
 
+import org.imixs.crypt.RestClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +15,7 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class EncryptTest {
+public class NotesTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
 
@@ -51,9 +52,9 @@ public class EncryptTest {
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
  
-		String uri = HOST+"/rest/message/encrypt/";
+		String uri = HOST+"/rest/notes/encrypt/";
 		// create a json test string
-		String json = "{\"user\":\"ralph.soika@imixs.com\",\"message\":\"Hallo Welt\"}";
+		String json = "{\"message\":\"Hallo Welt\"}";
 		
 		try {
 			int httpResult = restClient.post(uri, json);

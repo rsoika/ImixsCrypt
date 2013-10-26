@@ -2,6 +2,7 @@ package org.imixs.crypt.rest;
 
 import javax.ws.rs.core.MediaType;
 
+import org.imixs.crypt.RestClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

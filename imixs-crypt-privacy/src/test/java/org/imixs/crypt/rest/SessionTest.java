@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.ws.rs.core.MediaType;
 
+import org.imixs.crypt.RestClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,7 +17,7 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class SessionTest {
+public class SessionTest { 
 	String PASSWORD = "abc";
 	String HOST = "http://127.0.0.1:4040";
 	

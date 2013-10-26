@@ -24,6 +24,7 @@ public class GeneratorTest {
 
 	PublicKey publicKey = null;
 	PrivateKey privateKey = null;
+	ImixsRSAKeyUtil rsaKeyUtil=null;
 
 	private final static Logger logger = Logger.getLogger(GeneratorTest.class
 			.getName());
@@ -35,6 +36,7 @@ public class GeneratorTest {
 	 */ 
 	@Before
 	public void setup() {
+		rsaKeyUtil =new ImixsRSAKeyUtil();
 	}
 
 	/**
@@ -60,24 +62,24 @@ public class GeneratorTest {
 
 	@Test
 	public void generateKeyTest() throws Exception {
-		ImixsRSAKeyUtil
+		rsaKeyUtil
 				.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE, null);
 
 		// test with password
-		ImixsRSAKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+		rsaKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
 				"mypassword");
 	}
 
 	@Test
 	public void testGetKeys() throws Exception {
-		ImixsRSAKeyUtil
+		rsaKeyUtil
 				.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE, null);
 
-		privateKey = ImixsRSAKeyUtil.getPemPrivateKey(PRIVATE_KEY_FILE, null);
+		privateKey = rsaKeyUtil.getPrivateKey(PRIVATE_KEY_FILE, null);
 
 		Assert.assertNotNull(privateKey);
 
-		publicKey = ImixsRSAKeyUtil.getPemPublicKey(PUBLIC_KEY_FILE);
+		publicKey = rsaKeyUtil.getPublicKey(PUBLIC_KEY_FILE);
 
 		Assert.assertNotNull(publicKey);
 	}
@@ -92,21 +94,21 @@ public class GeneratorTest {
 
 		String password = "mypassword";
 
-		ImixsRSAKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+		rsaKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
 				password);
 
-		privateKey = ImixsRSAKeyUtil.getPemPrivateKey(PRIVATE_KEY_FILE,
+		privateKey = rsaKeyUtil.getPrivateKey(PRIVATE_KEY_FILE,
 				password);
 
 		Assert.assertNotNull(privateKey);
 
-		publicKey = ImixsRSAKeyUtil.getPemPublicKey(PUBLIC_KEY_FILE);
+		publicKey = rsaKeyUtil.getPublicKey(PUBLIC_KEY_FILE);
 
 		Assert.assertNotNull(publicKey);
 
 		// test get key with wrong password - exception expected
 		try {
-			privateKey = ImixsRSAKeyUtil.getPemPrivateKey(PRIVATE_KEY_FILE,
+			privateKey = rsaKeyUtil.getPrivateKey(PRIVATE_KEY_FILE,
 					"wrong-password");
 
 			Assert.fail();
@@ -124,14 +126,14 @@ public class GeneratorTest {
 	@Test
 	public void encryptDecryptTest() throws Exception {
 
-		ImixsRSAKeyUtil
+		rsaKeyUtil
 				.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE, null);
 
-		privateKey = ImixsRSAKeyUtil.getPemPrivateKey(PRIVATE_KEY_FILE, null);
+		privateKey = rsaKeyUtil.getPrivateKey(PRIVATE_KEY_FILE, null);
 
 		Assert.assertNotNull(privateKey);
 
-		publicKey = ImixsRSAKeyUtil.getPemPublicKey(PUBLIC_KEY_FILE);
+		publicKey = rsaKeyUtil.getPublicKey(PUBLIC_KEY_FILE);
 
 		Assert.assertNotNull(publicKey);
 
@@ -139,11 +141,11 @@ public class GeneratorTest {
 
 		String originalText = "Hello World";
 
-		cipherText = ImixsRSAKeyUtil.encrypt(originalText, publicKey);
+		cipherText = rsaKeyUtil.encrypt(originalText, publicKey);
 
 		logger.info(cipherText.toString());
 
-		String plainText = ImixsRSAKeyUtil.decrypt(cipherText, privateKey);
+		String plainText = rsaKeyUtil.decrypt(cipherText, privateKey);
 
 		Assert.assertEquals(originalText, plainText);
 
@@ -161,15 +163,15 @@ public class GeneratorTest {
 
 		String password = "my-password47";
 
-		ImixsRSAKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
+		rsaKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
 				password);
 
-		privateKey = ImixsRSAKeyUtil.getPemPrivateKey(PRIVATE_KEY_FILE,
+		privateKey = rsaKeyUtil.getPrivateKey(PRIVATE_KEY_FILE,
 				password);
 
 		Assert.assertNotNull(privateKey);
 
-		publicKey = ImixsRSAKeyUtil.getPemPublicKey(PUBLIC_KEY_FILE);
+		publicKey = rsaKeyUtil.getPublicKey(PUBLIC_KEY_FILE);
 
 		Assert.assertNotNull(publicKey);
 
@@ -177,11 +179,11 @@ public class GeneratorTest {
 
 		String originalText = "Hello World";
 
-		cipherText = ImixsRSAKeyUtil.encrypt(originalText, publicKey);
+		cipherText = rsaKeyUtil.encrypt(originalText, publicKey);
 
 		logger.info(cipherText.toString());
 
-		String plainText = ImixsRSAKeyUtil.decrypt(cipherText, privateKey);
+		String plainText = rsaKeyUtil.decrypt(cipherText, privateKey);
 
 		Assert.assertEquals(originalText, plainText);
 

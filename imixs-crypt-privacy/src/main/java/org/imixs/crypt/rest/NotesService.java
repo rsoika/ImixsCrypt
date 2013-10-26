@@ -17,66 +17,66 @@ import org.imixs.crypt.ImixsRSAKeyUtil;
 import org.imixs.crypt.xml.MessageItem;
 
 /**
- * Message Item Resource
+ * The Notes Service ecnrypts and decrypt local data with the local key pair
+ * 
  * 
  * Encrypted Messages will be base64 encoded
  * 
  * @author rsoika
  * 
  */
-@Path("/rest/message")
-public class MessageService {
+@Path("/rest/notes")
+public class NotesService {
 
 	private final static Logger logger = Logger.getLogger(KeyService.class
 			.getName());
 
 	
 	
-	@GET
-	@Produces("text/plain")
-	@Path("/world")
-	public String getHelloWorld() {
-		// Return some cliched textual content
-		return "Hello World";
-	}
-
 	
-
 	/**
-	 * This method ecryps a message with the users public key
+	 * This method encryps a message with the users public key The property user
+	 * have to be empty!
 	 * 
 	 * @param keyItem
 	 * 
 	 */
-	@POST 
+	@POST
 	@Path("/encrypt")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putEncrypt(MessageItem message) {
 
 		// validate key
-		if (message == null || message.getUser().isEmpty()) {
+		if (message == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(message).build();
+		}
+		if (message.getUser()!=null && !message.getUser().isEmpty()) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(message).build();
+		}
+
+		
+		
+		try {
+			String encrypted = CryptSession.getInstance().ecryptLocal(
+					message.getMessage());
+			message.setMessage(encrypted);
+
+			logger.info("decrypted=" + message.getMessage());
+		} catch (Exception e) {
+
+			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 
 		}
 
-		// find the users public key....
-	
 		// success HTTP 200
 		return Response.ok(message, MediaType.APPLICATION_JSON).build();
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	/**
 	 * This method decrypts a message with the users private key
@@ -91,36 +91,34 @@ public class MessageService {
 	public Response putDecrypt(MessageItem message) {
 
 		// validate key
-		if (message == null || message.getUser().isEmpty()) {
+		if (message == null) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(message).build();
+		}
+		if (message.getUser()!=null && !message.getUser().isEmpty()) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(message).build();
+		}
+
+		
+		// find the users public key....
+		try {
+			String decrypted = CryptSession.getInstance().decryptLocal(
+					message.getMessage());
+			message.setMessage(decrypted);
+
+			logger.info("decrypted=" + message.getMessage());
+		} catch (Exception e) {
+
+			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 
 		}
-
-		
 		// success HTTP 200
 		return Response.ok(message, MediaType.APPLICATION_JSON).build();
 
 	}
 
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-	private String getFilename(String user) {
-		user = user.toLowerCase();
-		user = user.replace("@", "_");
-		user = user.replace(" ", "_");
-
-		return "src/test/resources/" + user;
-	}
-
 }

@@ -72,7 +72,8 @@ public class KeyService {
 			// generate new key pair
 			logger.info("[KeyResource] generate new key pair....");
 			try {
-				ImixsRSAKeyUtil.generateKeyPair(getFilename(akey.getUser()),
+				ImixsRSAKeyUtil keyUtil=new ImixsRSAKeyUtil();
+				keyUtil.generateKeyPair(getFilename(akey.getUser()),
 						getFilename(akey.getUser()) + ".pub",
 					CryptSession.getInstance().getPassword());
 			} catch (Exception e) {

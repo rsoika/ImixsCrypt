@@ -3,13 +3,14 @@ package org.imixs.crypt.rest;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.imixs.crypt.ImixsRSAKeyUtil;
+import org.imixs.crypt.ImixsCryptException;
+import org.imixs.crypt.ImixsCryptKeyUtil;
 
 /**
  * The CryptSession is used by the SessionService as a singelton instance. The
@@ -18,33 +19,82 @@ import org.imixs.crypt.ImixsRSAKeyUtil;
  * The CryptSession makes use of the property file 'imixs.properties' containing
  * path settings for the local key store.
  * 
+ * The CryptSession instantiates keyUtil Implementation for key the management
+ * and encryption. The KeyUtil can be configured by the imixs.properties file.
+ * 
  * @author rsoika
  * @version 1.0.0
  */
 class CryptSession {
 
 	public static String IMIXS_PROPERTY_FILE = "imixs.properties";
-	public static String KEY_PATH = "/keys/";
 
-	private String password;
-	private String rootPath = "src/test/resources/";
+	public static String PROPERTY_KEY_UTIL = "keyutil";
+	
+	private String rootPath=null;
+	private String password=null;
+
+	
+	private static String DEFAULT_ROOT_PATH = "src/test/resources/";
+	private static String DEFAULT_KEY_UTIL = "org.imixs.crypt.ImixsRSAKeyUtil";
 	private Properties properties;
 
 	private static CryptSession instance = null;
+	private ImixsCryptKeyUtil keyUtil = null;
 
 	private final static Logger logger = Logger.getLogger(CryptSession.class
 			.getName());
 
+	
+	/**
+	 * Default Constructor
+	 */
 	protected CryptSession() {
+		init();
+	}
+	
+	
+	/**
+	 * Constructor with a default rootPath setting
+	 * @param rootPath for data storage
+	 */
+	protected CryptSession(String rootPath) {
+		this();
+		setRootPath(rootPath);
+	}
+
+	
+	
+	@SuppressWarnings("unchecked")
+	protected void init() {
 		// read properties
 		try {
-			properties.load(new FileInputStream(IMIXS_PROPERTY_FILE));
+			properties.load(new FileInputStream(getRootPath()+IMIXS_PROPERTY_FILE));
 			if (properties == null) {
 				logger.warning("[CryptSession] No imixs.properties file found!");
 				createDefaultProperties();
 			}
+
 		} catch (Exception e) {
 			createDefaultProperties();
+		}
+
+		// create default KeyUtil Class
+		String keyUtilClassName = properties.getProperty(PROPERTY_KEY_UTIL);
+		try {
+			Class<ImixsCryptKeyUtil> keyUtilClass;
+			keyUtilClass = (Class<ImixsCryptKeyUtil>) Class
+					.forName(keyUtilClassName);
+			keyUtil = (ImixsCryptKeyUtil) keyUtilClass.newInstance();
+		} catch (ClassNotFoundException e) {
+			logger.severe("[CryptSession] can not create ImixsCryptKeyUtil!");
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			logger.severe("[CryptSession] can not create ImixsCryptKeyUtil!");
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			logger.severe("[CryptSession] can not create ImixsCryptKeyUtil!");
+			e.printStackTrace();
 		}
 
 	}
@@ -57,16 +107,18 @@ class CryptSession {
 	}
 
 	/**
-	 * Returns the root path of the file based key storage.
+	 * Returns the root path of the file based key and data storage.
 	 * 
 	 * @return
 	 */
 	protected String getRootPath() {
+		if (rootPath==null)
+			rootPath=DEFAULT_ROOT_PATH;
 		return rootPath;
 	}
 
 	/**
-	 * Set the root path of the file based key storage.
+	 * Set the root path of the file based key and data storage.
 	 * 
 	 * @param rootPath
 	 */
@@ -99,8 +151,8 @@ class CryptSession {
 	 */
 	protected void generateKeyPair() throws Exception {
 		logger.info("[CryptSession] generate new keypair....");
-		ImixsRSAKeyUtil.generateKeyPair(getRootPath() + KEY_PATH + "id",
-				getRootPath() + KEY_PATH + "id.pub", password);
+		keyUtil.generateKeyPair(getRootPath() + "keys/id", getRootPath()
+				+ "keys/id.pub", password);
 	}
 
 	/**
@@ -116,33 +168,26 @@ class CryptSession {
 			PublicKey publicKey = null;
 			try {
 				// try loading from trusted key path
-				publicKey = ImixsRSAKeyUtil.getPemPublicKey(getRootPath()
-						+ KEY_PATH + "trusted/" + userid + ".pub");
-				logger.info("[CryptSession] trusted public key found for '" + userid
-						+ "'");
-			} catch (IOException e) {
-				logger.info("[CryptSession] no trusted public key found for '" + userid
-						+ "'");
+				publicKey = keyUtil.getPublicKey(getRootPath()
+						+ "keys/trusted/" + userid + ".pub");
+				logger.info("[CryptSession] trusted public key found for '"
+						+ userid + "'");
+			} catch (ImixsCryptException e) {
+				logger.info("[CryptSession] no trusted public key found for '"
+						+ userid + "'");
 				return null;
 			}
 			logger.info("[CryptSession] no trusted key found");
 			// try loading from public key
 			if (publicKey == null) {
-				publicKey = ImixsRSAKeyUtil.getPemPublicKey(getRootPath()
-						+ KEY_PATH + "public/" + userid + ".pub");
+				publicKey = keyUtil.getPublicKey(getRootPath()
+						+ "keys/public/" + userid + ".pub");
 			}
 			return publicKey;
 
-		} catch (NoSuchAlgorithmException e) {
+		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
 			e.printStackTrace();
-			return null;
-		} catch (InvalidKeySpecException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			logger.info("[CryptSession] no public key found!");
 			return null;
 		}
 
@@ -162,23 +207,62 @@ class CryptSession {
 		try {
 			PublicKey publicKey = null;
 			// try loading from trusted key path
-			publicKey = ImixsRSAKeyUtil.getPemPublicKey(getRootPath()
-					+ KEY_PATH + "id.pub");
+			publicKey = keyUtil.getPublicKey(getRootPath() + "keys/id.pub");
 
 			return publicKey;
-		} catch (NoSuchAlgorithmException e) {
+		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
 			e.printStackTrace();
 			return null;
-		} catch (InvalidKeySpecException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			logger.info("[CryptSession] no public key found!");
-			return null;
+
 		}
 
+	}
+
+	/**
+	 * Encrypts a message with the local public key
+	 * 
+	 * 
+	 * @param message
+	 * @return
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 */
+	protected String ecryptLocal(String message) {
+
+		try {
+			PublicKey publicKey = keyUtil.getPublicKey(getRootPath()
+					+ "keys/id.pub");
+			byte[] encrypted = keyUtil.encrypt(message, publicKey);
+			return new String(encrypted);
+		} catch (ImixsCryptException e) {
+			logger.warning("[CryptSession] " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * Encrypts a message with the local private key
+	 * 
+	 * @param message
+	 * @return
+	 */
+	protected String decryptLocal(String message) {
+
+		PrivateKey privateKey;
+		try {
+			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/id",
+					password);
+
+			String decrypted = keyUtil.decrypt(message.getBytes(), privateKey);
+
+			return decrypted;
+		} catch (ImixsCryptException e) {
+			logger.warning("[CryptSession] " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -190,10 +274,10 @@ class CryptSession {
 		properties = new Properties();
 		// set the properties value
 
-		properties.setProperty("keypath", rootPath + KEY_PATH);
+		properties.setProperty(PROPERTY_KEY_UTIL, DEFAULT_KEY_UTIL);
 		// save properties to project root folder
 		try {
-			properties.store(new FileOutputStream(IMIXS_PROPERTY_FILE), null);
+			properties.store(new FileOutputStream(getRootPath()+IMIXS_PROPERTY_FILE), null);
 			logger.info("[CryptSession] imixs.properties created successfull");
 		} catch (Exception e1) {
 			logger.severe("[CryptSession] unable to generate imixs.properties! Please check file access!");

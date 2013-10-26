@@ -24,7 +24,7 @@
  *  	Imixs Software Solutions GmbH - initial API and implementation
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
-package org.imixs.crypt.rest;
+package org.imixs.crypt;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

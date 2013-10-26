@@ -33,27 +33,27 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 /**
- * This class provides methods to generate RSA Key pairs and encrypt or decrypt
- * messages.
+ * This class implements the imixsCrypt KeyUitl interface and provides methods
+ * to generate RSA Key pairs and encrypt or decrypt messages.
  * 
  * The class provides methods to write a key pair into the filesystem and load
  * the public and private key form a file.
  * 
- * 
- * Open Issues
- * 
- * ssh-rsa support: We need a solution to convert a key into ath ssh-rsa format.
- * See:
- * <code>http://stackoverflow.com/questions/3706177/how-to-generate-ssh-compatible-id-rsa-pub-from-java/10343300#10343300</code>
- * 
  * @author rsoika
  * 
  */
-public class ImixsRSAKeyUtil {
+public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 
-	public static final String ALGORITHM = "RSA";
-	public static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
+	private static final String ALGORITHM = "RSA";
+private static final String SECRET_KEY_ALGORYTHM = "PBEWithSHA1AndDESede";
 	private static final int ITERATIONS = 1000;
+
+	/**
+	 * Default Constructor
+	 */
+	public ImixsRSAKeyUtil() {
+		super();
+	}
 
 	/**
 	 * generates a key pair and stores it in the filesystem. An optional
@@ -66,16 +66,36 @@ public class ImixsRSAKeyUtil {
 	 *            optional password to encrypt the private key
 	 * @throws Exception
 	 */
-	public static void generateKeyPair(String privateKeyFileName,
-			String publicKeyFileName, String password) throws Exception {
-		final KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ALGORITHM);
-		keyGen.initialize(1024);
+	public void generateKeyPair(String privateKeyFileName,
+			String publicKeyFileName, String password) throws ImixsCryptException {
+		KeyPairGenerator keyGen;
+		try {
+			keyGen = KeyPairGenerator.getInstance(ALGORITHM);
+			keyGen.initialize(1024);
 
-		final KeyPair key = keyGen.generateKeyPair();
+			final KeyPair key = keyGen.generateKeyPair();
 
-		writeKeyToFile(key.getPublic(), publicKeyFileName, null);
+			writeKeyToFile(key.getPublic(), publicKeyFileName, null);
 
-		writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
+			writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+
+		} catch (InvalidKeyException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeySpecException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (NoSuchPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (BadPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidAlgorithmParameterException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IOException e) {
+			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
+		}
 
 	}
 
@@ -86,93 +106,99 @@ public class ImixsRSAKeyUtil {
 	 * @param filename
 	 * @param algorithm
 	 * @return
-	 * @throws IOException
-	 * @throws NoSuchPaddingException
-	 * @throws BadPaddingException
-	 * @throws IllegalBlockSizeException
-	 * @throws InvalidAlgorithmParameterException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
+	 * @throws ImixsCryptException
+	 * @throws
 	 */
-	public static PrivateKey getPemPrivateKey(String filename, String password)
-			throws IOException, InvalidKeyException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InvalidAlgorithmParameterException,
-			IllegalBlockSizeException, BadPaddingException,
-			NoSuchPaddingException {
+	public PrivateKey getPrivateKey(String filename, String password)
+			throws ImixsCryptException {
+		PrivateKey privateKey = null;
 		File f = new File(filename);
-		FileInputStream fis = new FileInputStream(f);
-		DataInputStream dis = new DataInputStream(fis);
-		byte[] keyBytes = new byte[(int) f.length()];
-		dis.readFully(keyBytes);
-		dis.close();
+		FileInputStream fis;
+		try {
+			fis = new FileInputStream(f);
 
-		String temp = new String(keyBytes);
-		String privKeyPEM = temp.replace("-----BEGIN RSA PRIVATE KEY-----\n",
-				"");
-		privKeyPEM = privKeyPEM.replace("-----END RSA PRIVATE KEY-----", "");
-		// System.out.println("Private key\n"+privKeyPEM);
+			DataInputStream dis = new DataInputStream(fis);
+			byte[] keyBytes = new byte[(int) f.length()];
+			dis.readFully(keyBytes);
+			dis.close();
 
-		byte[] decoded = Base64Coder.decode(privKeyPEM);
+			String temp = new String(keyBytes);
+			String privKeyPEM = temp.replace(
+					"-----BEGIN RSA PRIVATE KEY-----\n", "");
+			privKeyPEM = privKeyPEM
+					.replace("-----END RSA PRIVATE KEY-----", "");
+			// System.out.println("Private key\n"+privKeyPEM);
 
-		/*
-		 * Check if password is used to encrypt the key
-		 */
-		if (password != null && !password.isEmpty()) {
-			// Here we actually encrypt the key
-			decoded = passwordDecrypt(password.toCharArray(), decoded);
+			byte[] decoded = Base64Coder.decode(privKeyPEM);
+
+			/*
+			 * Check if password is used to encrypt the key
+			 */
+			if (password != null && !password.isEmpty()) {
+				// Here we actually encrypt the key
+				decoded = passwordDecrypt(password.toCharArray(), decoded);
+			}
+
+			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
+			KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
+			privateKey = kf.generatePrivate(spec);
+		} catch (FileNotFoundException e) {
+			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
+		} catch (InvalidKeySpecException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeyException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+		} catch (InvalidAlgorithmParameterException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (BadPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (NoSuchPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IOException e) {
+			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
 		}
-
-		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
-		KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
-		PrivateKey key = kf.generatePrivate(spec);
-
-		return key;
+		return privateKey;
 	}
 
-	/**
-	 * Delete key pair
-	 * 
-	 * @param privateKeyFileName
-	 * @param publicKeyFileName
-	 */
-	public static void deleteKeyPair(String privateKeyFileName,
-			String publicKeyFileName) {
-		File keyFile = null;
-
-		if (privateKeyFileName != null && !privateKeyFileName.isEmpty()) {
-			keyFile = new File(privateKeyFileName);
-			if (keyFile.exists())
-				keyFile.delete();
-		}
-		if (publicKeyFileName != null && !publicKeyFileName.isEmpty()) {
-			keyFile = new File(publicKeyFileName);
-			if (keyFile.exists())
-				keyFile.delete();
-		}
-	}
-
-	public static PublicKey getPemPublicKey(String filename)
-			throws IOException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+	public PublicKey getPublicKey(String filename) throws ImixsCryptException {
+		PublicKey key = null;
 		File f = new File(filename);
-		FileInputStream fis = new FileInputStream(f);
-		DataInputStream dis = new DataInputStream(fis);
-		byte[] keyBytes = new byte[(int) f.length()];
-		dis.readFully(keyBytes);
-		dis.close();
+		FileInputStream fis;
+		try {
+			fis = new FileInputStream(f);
 
-		String temp = new String(keyBytes);
-		String publicKeyPEM = temp.replace("-----BEGIN PUBLIC KEY-----\n", "");
-		publicKeyPEM = publicKeyPEM.replace("-----END PUBLIC KEY-----", "");
+			DataInputStream dis = new DataInputStream(fis);
+			byte[] keyBytes = new byte[(int) f.length()];
+			dis.readFully(keyBytes);
+			dis.close();
 
-		// byte [] decoded = b64.decode(publicKeyPEM);
-		byte[] decoded = Base64Coder.decode(publicKeyPEM);
+			String temp = new String(keyBytes);
+			String publicKeyPEM = temp.replace("-----BEGIN PUBLIC KEY-----\n",
+					"");
+			publicKeyPEM = publicKeyPEM.replace("-----END PUBLIC KEY-----", "");
 
-		X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
-		KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
-		PublicKey key = kf.generatePublic(spec);
+			// byte [] decoded = b64.decode(publicKeyPEM);
+			byte[] decoded = Base64Coder.decode(publicKeyPEM);
 
+			X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
+			KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
+			key = kf.generatePublic(spec);
+
+		} catch (FileNotFoundException e) {
+			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
+
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+		} catch (InvalidKeySpecException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+
+		} catch (IOException e) {
+			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
+		}
 		return key;
 	}
 
@@ -184,23 +210,29 @@ public class ImixsRSAKeyUtil {
 	 * @param key
 	 *            :The public key
 	 * @return Encrypted text
-	 * @throws InvalidKeyException
-	 * @throws NoSuchPaddingException
-	 * @throws NoSuchAlgorithmException
-	 * @throws BadPaddingException
-	 * @throws IllegalBlockSizeException
+	 * @throws ImixsCryptException
 	 */
-	public static byte[] encrypt(String text, PublicKey key)
-			throws InvalidKeyException, NoSuchAlgorithmException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException {
+	public byte[] encrypt(String text, PublicKey key) throws ImixsCryptException {
 		byte[] cipherText = null;
 
 		// get an RSA cipher object and print the provider
-		final Cipher cipher = Cipher.getInstance(ALGORITHM);
-		// encrypt the plain text using the public key
-		cipher.init(Cipher.ENCRYPT_MODE, key);
-		cipherText = cipher.doFinal(text.getBytes());
+		Cipher cipher;
+		try {
+			cipher = Cipher.getInstance(ALGORITHM);
+			// encrypt the plain text using the public key
+			cipher.init(Cipher.ENCRYPT_MODE, key);
+			cipherText = cipher.doFinal(text.getBytes());
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+		} catch (NoSuchPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeyException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (BadPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		}
 
 		return cipherText;
 	}
@@ -213,34 +245,74 @@ public class ImixsRSAKeyUtil {
 	 * @param key
 	 *            :The private key
 	 * @return plain text
-	 * @throws NoSuchPaddingException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
-	 * @throws BadPaddingException
-	 * @throws IllegalBlockSizeException
+	 * @throws ImixsCryptException
 	 */
-	public static String decrypt(byte[] text, PrivateKey key)
-			throws NoSuchAlgorithmException, NoSuchPaddingException,
-			InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+	public String decrypt(byte[] text, PrivateKey key) throws ImixsCryptException {
 		byte[] dectyptedText = null;
 
 		// get an RSA cipher object and print the provider
-		final Cipher cipher = Cipher.getInstance(ALGORITHM);
-
-		// decrypt the text using the private key
-		cipher.init(Cipher.DECRYPT_MODE, key);
-		dectyptedText = cipher.doFinal(text);
+		Cipher cipher;
+		try {
+			cipher = Cipher.getInstance(ALGORITHM);
+			// decrypt the text using the private key
+			cipher.init(Cipher.DECRYPT_MODE, key);
+			dectyptedText = cipher.doFinal(text);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.NO_SUCH_ALGORITHM, e);
+		} catch (NoSuchPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeyException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (BadPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		}
 
 		return new String(dectyptedText);
 	}
 
 	/**
+	 * Delete key pair
+	 * 
+	 * @param privateKeyFileName
+	 * @param publicKeyFileName
+	 */
+	public static void deleteKeyPair(String privateKeyFileName,
+			String publicKeyFileName) {
+		File keyFile = null;
+	
+		if (privateKeyFileName != null && !privateKeyFileName.isEmpty()) {
+			keyFile = new File(privateKeyFileName);
+			if (keyFile.exists())
+				keyFile.delete();
+		}
+		if (publicKeyFileName != null && !publicKeyFileName.isEmpty()) {
+			keyFile = new File(publicKeyFileName);
+			if (keyFile.exists())
+				keyFile.delete();
+		}
+	}
+
+	/**
 	 * writes a key into the filesystem. using Base64 encoding
+	 * 
+	 * @throws IOException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws NoSuchPaddingException
+	 * @throws InvalidKeySpecException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
 	 * 
 	 * @throws Exception
 	 */
 	private static void writeKeyToFile(Key key, String keyFileName,
-			String password) throws Exception {
+			String password) throws IOException, InvalidKeyException,
+			NoSuchAlgorithmException, InvalidKeySpecException,
+			NoSuchPaddingException, IllegalBlockSizeException,
+			BadPaddingException, InvalidAlgorithmParameterException {
 		// Saving the key in a file
 
 		File keyFile = new File(keyFileName);
@@ -260,10 +332,10 @@ public class ImixsRSAKeyUtil {
 			keyBytes = passwordEncrypt(password.toCharArray(), keyBytes);
 		}
 
-		char[] encodedCharArray=Base64Coder.encode(keyBytes);
+		char[] encodedCharArray = Base64Coder.encode(keyBytes);
 		String sEncodedKey = new String(encodedCharArray);
 
-		System.out.println("Write KeyFile: "+keyFileName);
+		System.out.println("Write KeyFile: " + keyFileName);
 		System.out.println("");
 		System.out.println(sEncodedKey);
 
