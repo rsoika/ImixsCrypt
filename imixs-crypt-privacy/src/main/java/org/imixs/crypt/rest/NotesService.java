@@ -28,12 +28,11 @@ import org.imixs.crypt.xml.MessageItem;
 @Path("/rest/notes")
 public class NotesService {
 
+	private String ENCODING = "UTF-8";
+
 	private final static Logger logger = Logger.getLogger(KeyService.class
 			.getName());
 
-	
-	
-	
 	/**
 	 * This method encryps a message with the users public key The property user
 	 * have to be empty!
@@ -52,17 +51,17 @@ public class NotesService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
-		if (message.getUser()!=null && !message.getUser().isEmpty()) {
+		if (message.getUser() != null && !message.getUser().isEmpty()) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
 
-		
-		
 		try {
-			String encrypted = CryptSession.getInstance().ecryptLocal(
-					message.getMessage());
-			message.setMessage(encrypted);
+
+			byte[] data = message.getMessage().getBytes(ENCODING);
+			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data);
+
+			message.setMessage(new String(Base64Coder.encode(encrypted)));
 
 			logger.info("decrypted=" + message.getMessage());
 		} catch (Exception e) {
@@ -81,6 +80,8 @@ public class NotesService {
 	/**
 	 * This method decrypts a message with the users private key
 	 * 
+	 * The message is expected  in base64 encoded data!
+	 * 
 	 * @param keyItem
 	 * 
 	 */
@@ -95,17 +96,18 @@ public class NotesService {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
-		if (message.getUser()!=null && !message.getUser().isEmpty()) {
+		if (message.getUser() != null && !message.getUser().isEmpty()) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
 
-		
 		// find the users public key....
 		try {
-			String decrypted = CryptSession.getInstance().decryptLocal(
-					message.getMessage());
-			message.setMessage(decrypted);
+			byte[] data = Base64Coder.decode(message.getMessage());
+					
+			byte[] decrypted = CryptSession.getInstance().decryptLocal(
+					data);
+			message.setMessage(new String(decrypted,ENCODING));
 
 			logger.info("decrypted=" + message.getMessage());
 		} catch (Exception e) {
@@ -120,5 +122,4 @@ public class NotesService {
 
 	}
 
-	
 }

@@ -9,7 +9,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.ImixsCryptKeyUtil;
 
@@ -228,11 +227,11 @@ class CryptSession {
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	protected String ecryptLocal(String message) {
+	protected byte[] ecryptLocal(byte[] data) {
 		try {
 			PublicKey publicKey = keyUtil.getPublicKey(getRootPath()
 					+ "keys/id.pub");
-			return keyUtil.encrypt(message, publicKey);
+			return keyUtil.encrypt(data, publicKey);
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
 			e.printStackTrace();
@@ -247,14 +246,14 @@ class CryptSession {
 	 * @param message
 	 * @return
 	 */
-	protected String decryptLocal(String message) {
+	protected byte[] decryptLocal(byte[] encryptedData) {
 
 		PrivateKey privateKey;
 		try {
 			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/id",
 					password);
 
-			return keyUtil.decrypt(message, privateKey);
+			return keyUtil.decrypt(encryptedData, privateKey);
 
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());

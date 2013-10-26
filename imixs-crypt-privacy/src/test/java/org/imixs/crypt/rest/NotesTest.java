@@ -19,15 +19,14 @@ public class NotesTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
 
-
 	/**
 	 * Open Session
-	 */  
+	 */
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri =HOST+ "/rest/session";
-		try { 
+		String uri = HOST + "/rest/session";
+		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
 			// expected result 200
@@ -38,10 +37,9 @@ public class NotesTest {
 		}
 
 	}
-	
+
 	/**
-	 * Test encrypt and decrypt a message
-	 * <code>
+	 * Test encrypt and decrypt a message <code>
 	 * 
 			{"user":"ralph.soika@imixs.com","message":"abc"}
      * </code>
@@ -51,24 +49,34 @@ public class NotesTest {
 
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
- 
-		String uri = HOST+"/rest/notes/encrypt/";
+
+		String uri = HOST + "/rest/notes/encrypt/";
 		// create a json test string
 		String json = "{\"message\":\"Hallo Welt\"}";
-		
+
 		try {
 			int httpResult = restClient.post(uri, json);
 
-			String sContent=restClient.getContent();
-			
+			String sContent = restClient.getContent();
+
 			System.out.println(sContent);
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
-			
-			
-			
+
 			// decrypt
-			
+			uri = HOST + "/rest/notes/decrypt/";
+			httpResult = restClient.post(uri, sContent);
+
+			sContent = restClient.getContent();
+
+			System.out.println(sContent);
+
+			// expected result 200
+			Assert.assertEquals(200, httpResult);
+
+			Assert.assertTrue(sContent.contains("Hallo Welt"));
+			Assert.assertFalse(sContent.contains("xHallo Weltx"));
+
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -76,26 +84,5 @@ public class NotesTest {
 		}
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }
