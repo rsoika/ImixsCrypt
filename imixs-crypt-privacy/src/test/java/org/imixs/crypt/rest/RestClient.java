@@ -49,7 +49,7 @@ import org.imixs.crypt.deprecated.ImixsSecretKeyGenerator;
  * 
  * The ServiceClient supports methods for posting EntityCollections and
  * XMLItemCollections.
- * 
+ *  
  * The post method expects the rest service URI and a Dataobject based ont the
  * Imixs Workflow XML API
  * 

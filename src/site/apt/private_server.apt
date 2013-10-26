@@ -1,22 +1,58 @@
-Privacy Server
+ImixsCrypt-Private-Server 
 ~~~~~~~~~~~~~~
 
- The privacy server component provides a local web server as a user frontend for 
- managing imixs crypt.
+ The ImixsCrypt-Private-Server is a web server running on your local machine. 
+ This server proivdes a API to manage RSA Keys and a secure way for ecnrypting and 
+ decrypting messages. 
  
- The server should never run other than on localhost (127.0.0.1)
+ The ImixsCrypt-Private-Server provides a web interface to interact with the ImixsCrypt API.
+ This web interface can be extended by your own.
  
- The server provides a set of rest service methods which can be called from 
- a client. Typical this is a jquery based local web application.
+ The ImixsCrypt-Private-Server should never run other than on localhost (127.0.0.1). This is 
+ an important part of the privacy concept of ImixsCrypt. So to access the server you should
+ use the IP Address of your local private network:
  
-*SessionService
+ {{{http://127.0.0.1:4040}http://127.0.0.1:4040}}
+ 
+ 
+*The Key-Management
+~~~~~~~~~~~~~~ 
+ All keys which are used by the imixs-crypt-private-server are stored in the local server 
+ directory /keys/. This directory contains your local private RSA key pair as also
+ public keys from other users. 
+ 
+
+*--------------*----------------------------------------------------------------* 
+|| Directory   ||  Description                                                 ||
+*--------------+----------------------------------------------------------------+
+|/keys         | Contains the local key pair.                                   |
+|              | id.rsa = private            									|
+|              | id.rsa.pub = public key 										|
+*--------------+----------------------------------------------------------------+
+|/keys/public  | Contains public keys received from a imixs-crypt-public server |
+|              | This kind of keys are not verified.  							|
+|              | This means the identity could possibly have been corrupted. 	|
+*--------------+----------------------------------------------------------------+
+|/keys/trusted | Contains trusted public keys.                                	|
+|              | You can copy a public key you trust her here.              	|
+|              |                                                              	|
+*--------------+----------------------------------------------------------------+
+ 
+ To be sure to have a secure communication with other users you should copy a 
+ trusted version of the public key into the /keys/trusted/ directory. 
+ For example if you reciefe a local copy of the public key or your got the public 
+ key through a secure pgp encrypted email. 
+ 
+ 
+ 
+*The REST API
 ~~~~~~~~~~~~~~
- The SessionService provides a REST API to manage the users local key pair and
- open or close a crypt session.
- Because the primary key pair is password protected (private key) a client need to
- start a session to unlock the private key. After that the client can decrypt 
- data with his local RSA Key.  
- The password for the local key par is stored in-memory.
+ The ImixsCrypt-Private-Server provides a local REST API to manage the use of RSA private 
+ and public keys. 
+ Because your local private RSA key is password protected a client need to
+ start a session to work with the private key. After a session is created the 
+ REST API can be used by client to encrypt and decrypt data with the RSA Key.  
+ The password for the local key pair used during a session is only stored in-memory.
  If the session is closed the private key is dropped. 
   
 *---------------------*----------*---------------------------------------* 
@@ -31,6 +67,7 @@ Privacy Server
 |                     |          |If no key-pair still exits and a password was provided |
 |                     |          | then a new local key pair  will be generated.      |
 *---------------------+----------+---------------------------------------+
+ 
  
  
    

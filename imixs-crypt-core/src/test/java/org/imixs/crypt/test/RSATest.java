@@ -26,7 +26,7 @@ public class RSATest {
 	static final String PRIVATE_KEY_FILE = "src/test/resources/private.key";
 	static final String PUBLIC_KEY_FILE = "src/test/resources/public.key";
 
-	PublicKey publicKey = null;
+	PublicKey publicKey = null; 
 	PrivateKey privateKey = null;
 
 	private final static Logger logger = Logger.getLogger(RSATest.class

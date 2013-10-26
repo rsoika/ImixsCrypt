@@ -4,20 +4,22 @@ import java.io.File;
 
 import javax.ws.rs.core.MediaType;
 
-import org.imixs.crypt.server.CryptSession;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for open close a session
+ * This test class generates key pairs and open/closes a password protected
+ * crypt session
  * 
  * @author rsoika
  * 
  */
 public class SessionTest {
 	String PASSWORD = "abc";
+	String HOST = "http://127.0.0.1:4040";
+	String KEY_PATH="src/test/resources";
 
 	/**
 	 * generate key pair
@@ -52,26 +54,26 @@ public class SessionTest {
 	@Test
 	public void testGenerationOfKeyPair() {
 		RestClient restClient = new RestClient();
-
+ 
 		// first check to delete a key pair.
-		File keyFile = new File("src/test/resources/id");
+		File keyFile = new File("src/test/resources/keys/id");
 		if (keyFile.exists())
 			keyFile.delete();
 
-		keyFile = new File("src/test/resources/id.pub");
+		keyFile = new File("src/test/resources/keys/id.pub");
 		if (keyFile.exists())
 			keyFile.delete();
 
-		keyFile = new File("src/test/resources/id");
+		keyFile = new File("src/test/resources/keys/id");
 		Assert.assertFalse(keyFile.exists());
 
-		keyFile = new File("src/test/resources/id.pub");
+		keyFile = new File("src/test/resources/keys/id.pub");
 		Assert.assertFalse(keyFile.exists());
 
 		// generate new key by opening a session with a password
-		String uri = "http://localhost:8080/rest/session";
+		String uri = HOST + "/rest/session";
 		String value = "some-password";
-		try {
+		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, value);
 			String sContent = restClient.getContent();
@@ -80,14 +82,14 @@ public class SessionTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
-		}
+		} 
 
 		// now new key files should exist
 
-		keyFile = new File("src/test/resources/id");
+		keyFile = new File("src/test/resources/keys/id");
 		Assert.assertTrue(keyFile.exists());
 
-		keyFile = new File("src/test/resources/id.pub");
+		keyFile = new File("src/test/resources/keys/id.pub");
 		Assert.assertTrue(keyFile.exists());
 
 	}
@@ -100,7 +102,7 @@ public class SessionTest {
 
 		RestClient restClient = new RestClient();
 
-		String uri = "http://localhost:8080/rest/session/";
+		String uri = HOST + "/rest/session/";
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.get(uri);
@@ -109,7 +111,7 @@ public class SessionTest {
 
 			Assert.assertEquals(200, httpResult);
 
-			 Assert.assertTrue(sContent.length()>64);
+			Assert.assertTrue(sContent.length() > 64);
 
 		} catch (Exception e) {
 
@@ -118,20 +120,19 @@ public class SessionTest {
 		}
 
 		// next delete key pair and test again - http result 202 exptected
-		File keyFile = new File("src/test/resources/id");
+		File keyFile = new File("src/test/resources/keys/id");
 		if (keyFile.exists())
 			keyFile.delete();
-		keyFile = new File("src/test/resources/id.pub");
+		keyFile = new File("src/test/resources/keys/id.pub");
 		if (keyFile.exists())
 			keyFile.delete();
 
-		
-		keyFile = new File("src/test/resources/id");
+		keyFile = new File("src/test/resources/keys/id");
 		Assert.assertFalse(keyFile.exists());
 
 		keyFile = new File("src/test/resources/id.pub");
 		Assert.assertFalse(keyFile.exists());
-		
+
 		// now call rest service....
 
 		try {
@@ -144,7 +145,7 @@ public class SessionTest {
 			e.printStackTrace();
 			Assert.fail();
 		}
-		
+
 	}
 
 }

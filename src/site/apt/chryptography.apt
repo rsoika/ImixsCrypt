@@ -1,0 +1,14 @@
+Chryptography
+~~~~~~~~~~~~~~
+
+ Imixs crypt is based on the chryptographical  algorythm RSA
+  
+ The core class ImixsRSAKeyUtil provided different methods to generate and load 
+ RSA keys from the filesystem.
+ 
+ The class generates a RSA key pair and stores the public and private key into separate
+ files in BASE64 encoded format.
+ The private key is in addition encrypted with a user password based on the "PBEWithSHA1AndDESede" 
+ algorythm.
+ 
+ 

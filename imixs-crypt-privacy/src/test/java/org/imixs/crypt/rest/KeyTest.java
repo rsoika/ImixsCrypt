@@ -2,7 +2,6 @@ package org.imixs.crypt.rest;
 
 import javax.ws.rs.core.MediaType;
 
-import org.imixs.crypt.server.CryptSession;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,13 +16,17 @@ import org.junit.Test;
 public class KeyTest {
 
 	String PASSWORD="abc";
+	String HOST = "http://127.0.0.1:4040";
+
+	
+	
 	/**
 	 * Open Session
-	 */ 
+	 */  
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = "http://localhost:8080/rest/session";
+		String uri =HOST+ "/rest/session";
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
@@ -43,7 +46,7 @@ public class KeyTest {
 	public void teardown() {
 
 		RestClient restClient = new RestClient();
-		String uri = "http://localhost:8080/rest/session";
+		String uri = HOST+"/rest/session";
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.delete(uri, "");
@@ -61,7 +64,7 @@ public class KeyTest {
 	@Test
 	public void testGetPublicKey() {
 
-		String uri = "http://localhost:8080/rest/keys/public/a.b@imixs.org";
+		String uri =HOST+ "/rest/keys/public/a.b@imixs.org";
 		int httpResponse;
 
 		try {

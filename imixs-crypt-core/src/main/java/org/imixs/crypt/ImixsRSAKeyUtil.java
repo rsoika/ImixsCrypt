@@ -113,7 +113,7 @@ public class ImixsRSAKeyUtil {
 		privKeyPEM = privKeyPEM.replace("-----END RSA PRIVATE KEY-----", "");
 		// System.out.println("Private key\n"+privKeyPEM);
 
-		byte[] decoded = Base64Coder.decodeLines(privKeyPEM);
+		byte[] decoded = Base64Coder.decode(privKeyPEM);
 
 		/*
 		 * Check if password is used to encrypt the key
@@ -167,7 +167,7 @@ public class ImixsRSAKeyUtil {
 		publicKeyPEM = publicKeyPEM.replace("-----END PUBLIC KEY-----", "");
 
 		// byte [] decoded = b64.decode(publicKeyPEM);
-		byte[] decoded = Base64Coder.decodeLines(publicKeyPEM);
+		byte[] decoded = Base64Coder.decode(publicKeyPEM);
 
 		X509EncodedKeySpec spec = new X509EncodedKeySpec(decoded);
 		KeyFactory kf = KeyFactory.getInstance(ALGORITHM);
@@ -260,7 +260,8 @@ public class ImixsRSAKeyUtil {
 			keyBytes = passwordEncrypt(password.toCharArray(), keyBytes);
 		}
 
-		String sEncodedKey = Base64Coder.encodeLines(keyBytes);
+		char[] encodedCharArray=Base64Coder.encode(keyBytes);
+		String sEncodedKey = new String(encodedCharArray);
 
 		System.out.println("Write KeyFile: "+keyFileName);
 		System.out.println("");

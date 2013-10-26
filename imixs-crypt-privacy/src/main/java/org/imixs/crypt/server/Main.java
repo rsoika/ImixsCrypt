@@ -64,7 +64,7 @@ public class Main {
 			rc.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, true);
 
 			HttpServer server = GrizzlyServerFactory.createHttpServer(
-					"http://localhost:8080", rc);
+					"http://127.0.0.1:4040", rc);
 
 			// add static pages handler
 			server.getServerConfiguration().addHttpHandler(

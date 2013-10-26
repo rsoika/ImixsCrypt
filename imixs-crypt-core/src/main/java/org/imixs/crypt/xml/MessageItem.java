@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Represents a single message item.
  * 
- * @author rsoika
+ * @author rsoika 
  * 
  */
 @XmlRootElement(name = "messageItem")

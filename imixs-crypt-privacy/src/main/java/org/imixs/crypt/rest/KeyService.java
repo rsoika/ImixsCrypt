@@ -12,7 +12,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.ImixsRSAKeyUtil;
-import org.imixs.crypt.server.CryptSession;
 import org.imixs.crypt.xml.KeyItem;
 
 /**

@@ -1,28 +1,17 @@
 package org.imixs.crypt.rest;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Logger;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.imixs.crypt.Base64Coder;
-import org.imixs.crypt.server.CryptSession;
 import org.imixs.crypt.xml.KeyItem;
 
 /**
@@ -52,12 +41,12 @@ public class SessionService {
 	@Path("/session")
 	@Consumes("text/plain")
 	public Response setPrivateKeyPassword(String password) {
-
+ 
 		CryptSession.getInstance().setPassword(password);
 		if (password != null && !password.isEmpty()) {
 
 			// verify if a key pair exists
-			PublicKey publicKey = CryptSession.getInstance().getPublicKey();
+			PublicKey publicKey = CryptSession.getInstance().getLocalPublicKey();
 			if (publicKey == null) {
 				logger.info("[SessionService] generate new KeyPair...");
 
@@ -94,7 +83,7 @@ public class SessionService {
 		KeyItem key = new KeyItem();
 
 		try {
-			publicKey = CryptSession.getInstance().getPublicKey();
+			publicKey = CryptSession.getInstance().getLocalPublicKey();
 			if (publicKey == null) {
 				logger.info("KeyPair not yet created");
 
