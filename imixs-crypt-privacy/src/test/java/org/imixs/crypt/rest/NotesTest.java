@@ -39,23 +39,22 @@ public class NotesTest {
 	}
 
 	/**
-	 * Test encrypt and decrypt a message <code>
-	 * 
-			{"message":"abc"}
-     * </code>
+	 * Test encrypt and text into a notes data file
 	 */
 	@Test
-	public void testPostEncryptDecryptJsonMessage() {
+	public void testPostEncryptNotes() {
 
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
-		String uri = HOST + "/rest/notes/encrypt/";
+		String notesName = "test";
+
+		String uri = HOST + "/rest/notes/encrypt/" + notesName;
 		// create a json test string
-		String json = "{\"message\":\"Hallo Welt\"}";
+		String message = "Hallo Welt";
 
 		try {
-			int httpResult = restClient.post(uri, json);
+			int httpResult = restClient.post(uri, message);
 
 			String sContent = restClient.getContent();
 
@@ -63,19 +62,20 @@ public class NotesTest {
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 
-			// decrypt
-			uri = HOST + "/rest/notes/decrypt/";
-			httpResult = restClient.post(uri, sContent);
+			// decrypt again....
 
-			sContent = restClient.getContent();
+			uri = HOST + "/rest/notes/decrypt/" + notesName;
+			String result = null;
+
+			httpResult = restClient.get(uri);
+
+			result = restClient.getContent();
 
 			System.out.println(sContent);
-
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 
-			Assert.assertTrue(sContent.contains("Hallo Welt"));
-			Assert.assertFalse(sContent.contains("xHallo Weltx"));
+			Assert.assertEquals(message, result);
 
 		} catch (Exception e) {
 

@@ -1,5 +1,6 @@
 package org.imixs.crypt.rest;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -94,7 +95,11 @@ class CryptSession {
 			logger.severe("[CryptSession] can not create ImixsCryptKeyUtil!");
 			e.printStackTrace();
 		}
-
+		
+		// create key and data directories
+		new File(this.getRootPath() + "keys").mkdirs();
+		new File(this.getRootPath() + "data/notes").mkdirs();
+		
 	}
 
 	protected static CryptSession getInstance() {
