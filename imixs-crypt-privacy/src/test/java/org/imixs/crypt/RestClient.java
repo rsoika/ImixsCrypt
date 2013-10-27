@@ -42,7 +42,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.imixs.crypt.deprecated.ImixsSecretKeyGenerator;
 
-/**
+/** 
  * This ServiceClient is a WebService REST Client which encapsulate the
  * communication with a REST web serice based on the Imixs Workflow REST API.
  * The Implementation is based on the JAXB API.

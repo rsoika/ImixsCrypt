@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * This test class generates key pairs and open/closes a password protected
  * crypt session
- * 
+ *  
  * @author rsoika
  * 
  */

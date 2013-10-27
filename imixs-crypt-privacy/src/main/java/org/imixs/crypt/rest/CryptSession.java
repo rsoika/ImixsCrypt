@@ -207,10 +207,8 @@ class CryptSession {
 
 			return publicKey;
 		} catch (ImixsCryptException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
+			logger.warning("[CryptSession] local public key not found");
 			return null;
-
 		}
 
 	}

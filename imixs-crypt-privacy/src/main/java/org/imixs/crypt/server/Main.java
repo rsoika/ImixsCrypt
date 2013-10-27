@@ -40,11 +40,13 @@
 
 package org.imixs.crypt.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.StaticHttpHandler;
+import org.glassfish.grizzly.utils.ArraySet;
 
 import com.sun.jersey.api.container.grizzly2.GrizzlyServerFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -67,11 +69,20 @@ public class Main {
 					"http://127.0.0.1:4040", rc);
 
 			// add static pages handler
-			server.getServerConfiguration().addHttpHandler(
-					new StaticHttpHandler(getTemplatePath()), "/app");
-
+			StaticHttpHandler staticHandler=new StaticHttpHandler(getTemplatePath());
+			staticHandler.addDocRoot("/app");
+			server.getServerConfiguration().addHttpHandler(staticHandler, "/app");
+			
+			
+			
+			
+			
 			
 			server.start();
+			
+			
+		 ArraySet<File>	ding=staticHandler.getDocRoots();
+		 
 
 			System.out.println("Press any key to stop the server...");
 			System.in.read();
@@ -82,6 +93,9 @@ public class Main {
 	}
 
 	private static String getTemplatePath() throws URISyntaxException {
+		
+		//return "src/main/resources/webapp/";
+		
 		return Main.class.getClassLoader().getResource("webapp")
 				.getPath();
 	}

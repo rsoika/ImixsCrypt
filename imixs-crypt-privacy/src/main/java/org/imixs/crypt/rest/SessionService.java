@@ -87,9 +87,13 @@ public class SessionService {
 			if (publicKey == null) {
 				logger.info("KeyPair not yet created");
 
-				return Response.status(Response.Status.ACCEPTED).entity(null)
+//				return Response.status(Response.Status.ACCEPTED).entity(null)
+//						.type(MediaType.APPLICATION_JSON).build();
+//				return Response.status(Response.Status.OK).entity("")
+//						.type(MediaType.APPLICATION_JSON).build();
+//				
+				return Response.status(Response.Status.OK).entity(key)
 						.type(MediaType.APPLICATION_JSON).build();
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

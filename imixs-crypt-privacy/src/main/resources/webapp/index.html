@@ -1,13 +1,195 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Title of the document</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="shortcut icon" href="../../assets/ico/favicon.png">
+
+<title>Imixs Crypt - Private Server</title>
+
+<!-- Bootstrap core CSS -->
+<link href="./bootstrap/css/bootstrap.css" rel="stylesheet">
+
+<!-- Custom styles for this template -->
+<link href="custom.css" rel="stylesheet">
+
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+    <![endif]-->
+
+
+<script src="./jquery/jquery-2.0.3.js"></script>
+<script>
+	$(document).ready(function() {
+
+		// Assign handlers immediately after making the request,
+		// and remember the jqxhr object for this request
+		var jqxhr = $.getJSON("/rest/session/", function(data) {
+			console.log("success");
+
+			if (data.key == null) {
+
+				//  alert('no key :-(...');
+				//	$("#welcome_id").hide();
+				//	$("#login_id").show();
+			} else
+				alert('we have a key :-)');
+
+		}).done(function() {
+			console.log("second success");
+		}).fail(function() {
+			console.log("error");
+		}).always(function() {
+			console.log("complete");
+		});
+
+		// Perform other work here ...
+
+		// Set another completion function for the request above
+		jqxhr.complete(function() {
+			console.log("second complete");
+		});
+
+	});
+	
+	/* This method verifies the password input and starts a key generation
+	*/
+	function createKey() {
+		// disable input
+		password1=$("#password_id1").prop('disabled', true);
+		password2=$("#password_id2").prop('disabled', true);
+		// get password
+		var password1=$("#password_id1").val();
+		var password2=$("#password_id2").val();
+		if (password1 != password2) {
+			// enable input
+			password1=$("#password_id1").prop('disabled', false);
+			password2=$("#password_id2").prop('disabled', false);
+			alert('Password not correct!');
+			
+			
+			
+			password1=$("#password_id1").val('');
+			password2=$("#password_id2").val('');
+		} else {
+			
+			alert("Sending password");
+		
+			var saveData = $.ajax({
+			      type: 'POST',
+			      dataType: "text",
+			      processData: false,
+			      contentType: 'text/plain',
+			      url: "http://localhost:4040/rest/session",
+			      data: password1,
+			      success: function(resultData) { alert("Save Complete") }
+			});
+			saveData.error(function() { alert("Something went wrong"); });
+		}
+	}
+</script>
 </head>
 
 <body>
-<h1>Hello Grizzly V2.3.6</h1>  
-<a href="../rest/message/json">JSON Example</a>
-</body>
 
+	<div class="container">
+		<div class="header">
+			<ul class="nav nav-pills pull-right">
+				<li class="active"><a href="./index.html">Home</a></li>
+				<li><a href="#">About</a></li>
+				<li><a href="#">Contact</a></li>
+			</ul>
+			<h3 class="text-muted">My private crypt server</h3>
+		</div>
+
+		<div id="welcome_id" class="jumbotron">
+			<h1>Welcome to ImixsCrypt</h1>
+			<p class="lead">First you need to create your private key. With
+				your private key you can start and login into your private crypt server.</p>
+
+
+			<table align="center">
+				<tr>
+					<td><span>Your password:</span></td>
+					<td><input type="password" id="password_id1"
+						style="font-size: 14px;" /></td>
+				</tr>
+				<tr>
+					<td><span>Reenter password:</span></td>
+					<td><input type="password" id="password_id2"
+						style="font-size: 14px;" /></td>
+				</tr>
+			</table>
+
+			<p>
+				<a class="btn btn-lg btn-success" href="#" onclick="createKey();">Create Key</a>
+			</p>
+		</div>
+
+		<div id="login_id" class="jumbotron" style="display: none">
+			<h1>Start and Login</h1>
+			<p class="lead">Login with your private key password to start
+				your private crypt server.</p>
+			<p style="align: left;">
+				<span>Password:</span> <input type="password" id="password_id" /> <br />
+			</p>
+
+			<p>
+				<a class="btn btn-lg btn-success" href="#">Login</a>
+			</p>
+
+
+		</div>
+
+
+
+
+
+
+		<div class="row marketing">
+			<div class="col-lg-6">
+				<h4>Your privacy</h4>
+				<p>We think that your privacy is one of the most important
+					things when using the internt. Imixs private crypt server gives you
+					back the control of your privac.</p>
+
+				<h4>Don't trust the net</h4>
+				<p>You should not trust server in the internet which you have no
+					control about. Imixs private crypt is a local server. It only runs
+					on your local mashine.</p>
+
+				<h4>Never share your passwords</h4>
+				<p>You should not give anyone your private password. And
+					certainly not any unknown Internet server. With Imixs private crypt
+					there is no need to give your password away!</p>
+
+				<h4>Cryptography</h4>
+				<p>Cryptography is nothing new. It exitss before the internet
+					becomes part of your live. Imixs crypt uses a well known and
+					trustable crypthography alogrithm called RSA. Read was RSA is and
+					how it works.</p>
+
+
+			</div>
+		</div>
+
+		<div class="footer">
+			<p>&copy; Company 2013</p>
+		</div>
+
+	</div>
+	<!-- /container -->
+
+
+	<!-- Bootstrap core JavaScript
+    ================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+</body>
 </html>
