@@ -161,33 +161,26 @@ class CryptSession {
 	 * the method returns null if no public key exists.
 	 */
 	protected PublicKey getPublicKey(String userid) {
-
+		PublicKey publicKey = null;
 		try {
-			PublicKey publicKey = null;
+			// try loading from trusted key path
+			publicKey = keyUtil.getPublicKey(getRootPath() + "keys/trusted/"
+					+ userid + ".pub");
+			logger.info("[CryptSession] trusted public key found for '"
+					+ userid + "'");
+		} catch (ImixsCryptException e) {
+			// try loading public key
 			try {
-				// try loading from trusted key path
-				publicKey = keyUtil.getPublicKey(getRootPath()
-						+ "keys/trusted/" + userid + ".pub");
-				logger.info("[CryptSession] trusted public key found for '"
-						+ userid + "'");
-			} catch (ImixsCryptException e) {
-				logger.info("[CryptSession] no trusted public key found for '"
-						+ userid + "'");
-				return null;
-			}
-			logger.info("[CryptSession] no trusted key found");
-			// try loading from public key
-			if (publicKey == null) {
 				publicKey = keyUtil.getPublicKey(getRootPath() + "keys/public/"
 						+ userid + ".pub");
-			}
-			return publicKey;
 
-		} catch (ImixsCryptException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
+			} catch (ImixsCryptException e2) {
+				logger.info("[CryptSession] no public key found for '" + userid
+						+ "' :" + e2.getMessage());
+			}
+
 		}
+		return publicKey;
 
 	}
 
@@ -218,6 +211,27 @@ class CryptSession {
 	}
 
 	/**
+	 * Encrypts a message String with a public key. The encrypted byte array
+	 * will be returned Base64 encoded.
+	 * 
+	 * 
+	 * @param message
+	 * @return
+	 * @throws IOException
+	 * @throws InvalidKeySpecException
+	 */
+	protected byte[] ecrypt(byte[] data, String aUserID) {
+		try {
+			PublicKey publicKey = this.getPublicKey(aUserID);
+			return keyUtil.encrypt(data, publicKey);
+		} catch (ImixsCryptException e) {
+			logger.warning("[CryptSession] " + e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
 	 * Encrypts a message String with the local public key. The encrypted byte
 	 * array will be returned Base64 encoded.
 	 * 
@@ -229,8 +243,8 @@ class CryptSession {
 	 */
 	protected byte[] ecryptLocal(byte[] data) {
 		try {
-			PublicKey publicKey = keyUtil.getPublicKey(getRootPath()
-					+ "keys/id.pub");
+			// get the local public key
+			PublicKey publicKey = this.getLocalPublicKey();
 			return keyUtil.encrypt(data, publicKey);
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
@@ -240,8 +254,7 @@ class CryptSession {
 	}
 
 	/**
-	 * Decrypts a message with the local private key.
-	 * The encrypted message is 
+	 * Decrypts a message with the local private key. The encrypted message is
 	 * 
 	 * @param message
 	 * @return

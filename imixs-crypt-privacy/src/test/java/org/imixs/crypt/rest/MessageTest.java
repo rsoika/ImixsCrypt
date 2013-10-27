@@ -1,5 +1,11 @@
 package org.imixs.crypt.rest;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
 import javax.ws.rs.core.MediaType;
 
 import org.imixs.crypt.RestClient;
@@ -19,15 +25,14 @@ public class MessageTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
 
-
 	/**
 	 * Open Session
-	 */  
+	 */
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri =HOST+ "/rest/session";
-		try { 
+		String uri = HOST + "/rest/session";
+		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
 			// expected result 200
@@ -37,13 +42,30 @@ public class MessageTest {
 			Assert.fail();
 		}
 
+		// copy a public test key
+		File pbulicKeyFile = new File("src/test/resources/keys/id.pub");
+		if (!pbulicKeyFile.exists())
+			Assert.fail();
+		try {
+			CopyOption[] options = new CopyOption[] {
+					StandardCopyOption.REPLACE_EXISTING,
+					StandardCopyOption.COPY_ATTRIBUTES };
+			File tragetFile = new File(
+					"src/test/resources/keys/public/test.user@imixs.org.pub");
+			if (tragetFile.getParentFile() != null)
+				tragetFile.getParentFile().mkdirs();
+			Files.copy(pbulicKeyFile.toPath(), tragetFile.toPath(), options);
+		} catch (IOException e) {
+			Assert.fail();
+			e.printStackTrace();
+		}
+
 	}
-	
+
 	/**
-	 * Test encrypt and decrypt a message
-	 * <code>
+	 * Test encrypt and decrypt a message <code>
 	 * 
-			{"user":"ralph.soika@imixs.com","message":"abc"}
+			{"user":"test.user@imixs.org","message":"abc"}
      * </code>
 	 */
 	@Test
@@ -51,24 +73,36 @@ public class MessageTest {
 
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
- 
-		String uri = HOST+"/rest/notes/encrypt/";
+
+		String uri = HOST + "/rest/message/encrypt/";
 		// create a json test string
-		String json = "{\"user\":\"ralph.soika@imixs.com\",\"message\":\"Hallo Welt\"}";
-		
+		String json = "{\"user\":\"test.user@imixs.org\", \"message\":\"Hallo Welt\"}";
+
 		try {
 			int httpResult = restClient.post(uri, json);
 
-			String sContent=restClient.getContent();
-			
+			String sContent = restClient.getContent();
+
 			System.out.println(sContent);
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
-			
-			
-			
+
 			// decrypt
+			uri = HOST + "/rest/message/decrypt/";
 			
+			
+			httpResult = restClient.post(uri, sContent);
+
+			sContent = restClient.getContent();
+
+			System.out.println(sContent);
+
+			// expected result 200
+			Assert.assertEquals(200, httpResult);
+
+			Assert.assertTrue(sContent.contains("Hallo Welt"));
+			Assert.assertFalse(sContent.contains("xHallo Weltx"));
+
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -76,26 +110,5 @@ public class MessageTest {
 		}
 
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }

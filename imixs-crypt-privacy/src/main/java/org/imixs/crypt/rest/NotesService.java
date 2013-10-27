@@ -1,11 +1,8 @@
 package org.imixs.crypt.rest;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -13,7 +10,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.Base64Coder;
-import org.imixs.crypt.ImixsRSAKeyUtil;
 import org.imixs.crypt.xml.MessageItem;
 
 /**
@@ -30,7 +26,7 @@ public class NotesService {
 
 	private String ENCODING = "UTF-8";
 
-	private final static Logger logger = Logger.getLogger(KeyService.class
+	private final static Logger logger = Logger.getLogger(NotesService.class
 			.getName());
 
 	/**

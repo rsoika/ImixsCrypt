@@ -41,7 +41,7 @@ public class NotesTest {
 	/**
 	 * Test encrypt and decrypt a message <code>
 	 * 
-			{"user":"ralph.soika@imixs.com","message":"abc"}
+			{"message":"abc"}
      * </code>
 	 */
 	@Test
