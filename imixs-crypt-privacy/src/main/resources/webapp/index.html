@@ -33,13 +33,15 @@
 			console.log("success");
 
 			if (data.key == null) {
-
-				//  alert('no key :-(...');
-				//	$("#welcome_id").hide();
-				//	$("#login_id").show();
-			} else
-				alert('we have a key :-)');
-
+			//	$("#start_id").show();
+			//	$("#welcome_id").show();
+			//	$("#login_id").show();
+			} else {
+				//alert('we have a key :-)');
+				$("#welcome_id").hide();
+				$("#start_id").hide();
+				$("#login_id").show();
+			}
 		}).done(function() {
 			console.log("second success");
 		}).fail(function() {
@@ -56,6 +58,12 @@
 		});
 
 	});
+	
+	function startNew() {
+		$("#start_id").show();
+		$("#welcome_id").hide();
+		$("#login_id").hide();
+	}
 	
 	/* This method verifies the password input and starts a key generation
 	*/
@@ -107,12 +115,21 @@
 			<h3 class="text-muted">My private crypt server</h3>
 		</div>
 
+
 		<div id="welcome_id" class="jumbotron">
 			<h1>Welcome to ImixsCrypt</h1>
+			<p class="lead">ImixsCrypt is your private web server. 
+			ImixsCrypt protects your notes, makes your messaging confidential 
+			and provides a secure authentication.</p>
+			<p>
+				<a class="btn btn-lg btn-success" href="#" onclick="startNew();">Start now...</a>
+			</p>
+		</div>
+
+		<div id="start_id" class="jumbotron" style="display: none">
+			<h1>Start and Login</h1>
 			<p class="lead">First you need to create your private key. With
 				your private key you can start and login into your private crypt server.</p>
-
-
 			<table align="center">
 				<tr>
 					<td><span>Your password:</span></td>
@@ -138,12 +155,9 @@
 			<p style="align: left;">
 				<span>Password:</span> <input type="password" id="password_id" /> <br />
 			</p>
-
 			<p>
 				<a class="btn btn-lg btn-success" href="#">Login</a>
 			</p>
-
-
 		</div>
 
 

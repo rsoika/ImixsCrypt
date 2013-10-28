@@ -137,8 +137,10 @@ public class SessionTest {
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.get(uri);
-
-			Assert.assertEquals(202, httpResult);
+			String sContent = restClient.getContent();
+			Assert.assertEquals(200, httpResult);
+			// result should be a n emypt key
+			Assert.assertEquals("{\"user\":null,\"key\":null}", sContent.trim());
 		} catch (Exception e) {
 
 			e.printStackTrace();
