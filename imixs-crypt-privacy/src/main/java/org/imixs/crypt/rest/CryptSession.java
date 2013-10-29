@@ -6,10 +6,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.ImixsCryptKeyUtil;
 
@@ -34,6 +36,7 @@ class CryptSession {
 
 	private String rootPath = null;
 	private String password = null;
+	private String sessionId= null;
 
 	private static String DEFAULT_ROOT_PATH = "src/test/resources/";
 	private static String DEFAULT_KEY_UTIL = "org.imixs.crypt.ImixsRSAKeyUtil";
@@ -139,13 +142,48 @@ class CryptSession {
 	}
 
 	/**
-	 * set the current private key password.
+	 * set the current private key password and generates a SessionId
+	 * The sessionId is used for further authentication. 
+	 * If the password is null the sessionId will be invalidated.
 	 * 
 	 * @param password
 	 */
 	protected void setPassword(String password) {
 		this.password = password;
+		if (password==null || password.isEmpty()) {
+			// invalidate sessionId
+			setSessionId(null);
+		} else {
+			// generate new SessionId
+			 SecureRandom random = new SecureRandom();
+			 byte bytes[] = new byte[20];
+		     random.nextBytes(bytes);
+		     setSessionId(new String(Base64Coder.encode(bytes)));
+		}
 	}
+
+	/**
+	 * returns the current sessionId or null if no session was stared.
+	 * @return
+	 */
+	protected String getSessionId() {
+		return sessionId;
+	}
+
+	private void setSessionId(String sessionId) {
+		this.sessionId = sessionId;
+	}
+	
+	/**
+	 * compares a given sessionId with current sessionId
+	 * @param aSessionID
+	 */
+	public boolean isValidSession(String aSessionID) {
+		if (getSessionId()==null || aSessionID==null)
+			return false;
+		return getSessionId().equals(aSessionID);
+	}
+	
 
 	/**
 	 * generates a new key pair with the current password
@@ -153,6 +191,10 @@ class CryptSession {
 	 * @throws Exception
 	 */
 	protected void generateKeyPair() throws Exception {
+		if (getSessionId()==null) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			return;
+		}
 		logger.info("[CryptSession] generate new keypair....");
 		keyUtil.generateKeyPair(getRootPath() + "keys/id", getRootPath()
 				+ "keys/id.pub", password);
@@ -164,8 +206,16 @@ class CryptSession {
 	 * method reads the key form the public key directory /keys/public
 	 * 
 	 * the method returns null if no public key exists.
+	 * @throws ImixsCryptException 
 	 */
-	protected PublicKey getPublicKey(String userid) {
+	protected PublicKey getPublicKey(String userid,String asessionId) throws ImixsCryptException {
+		
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,"Invalid SessionID: " + asessionId);
+
+		}
+
 		PublicKey publicKey = null;
 		try {
 			// try loading from trusted key path
@@ -199,10 +249,9 @@ class CryptSession {
 	 * 
 	 */
 	protected PublicKey getLocalPublicKey() {
-
 		try {
 			PublicKey publicKey = null;
-			// try loading from trusted key path
+			// try loading from  key path
 			publicKey = keyUtil.getPublicKey(getRootPath() + "keys/id.pub");
 
 			return publicKey;
@@ -220,12 +269,19 @@ class CryptSession {
 	 * 
 	 * @param message
 	 * @return
+	 * @throws ImixsCryptException 
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	protected byte[] ecrypt(byte[] data, String aUserID) {
+	protected byte[] ecrypt(byte[] data, String aUserID,String asessionId) throws ImixsCryptException {
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,"Invalid SessionID: " + asessionId);
+
+		}
+
 		try {
-			PublicKey publicKey = this.getPublicKey(aUserID);
+			PublicKey publicKey = this.getPublicKey(aUserID,asessionId);
 			return keyUtil.encrypt(data, publicKey);
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
@@ -241,10 +297,17 @@ class CryptSession {
 	 * 
 	 * @param message
 	 * @return
+	 * @throws ImixsCryptException 
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	protected byte[] ecryptLocal(byte[] data) {
+	protected byte[] ecryptLocal(byte[] data,String asessionId) throws ImixsCryptException {
+		
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,"Invalid SessionID: " + asessionId);
+
+		}
 		try {
 			// get the local public key
 			PublicKey publicKey = this.getLocalPublicKey();
@@ -261,10 +324,16 @@ class CryptSession {
 	 * 
 	 * @param message
 	 * @return
+	 * @throws ImixsCryptException 
 	 */
-	protected byte[] decryptLocal(byte[] encryptedData) {
+	protected byte[] decryptLocal(byte[] encryptedData,String asessionId) throws ImixsCryptException {
 
 		PrivateKey privateKey;
+
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,"Invalid SessionID: " + asessionId);
+		}
 		try {
 			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/id",
 					password);

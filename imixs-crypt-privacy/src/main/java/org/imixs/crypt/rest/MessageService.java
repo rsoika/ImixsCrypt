@@ -3,6 +3,7 @@ package org.imixs.crypt.rest;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -45,7 +46,8 @@ public class MessageService {
 	@Path("/encrypt")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putEncrypt(MessageItem message) {
+	public Response putEncrypt(MessageItem message,
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key - check if user is available 
 		if (message == null) {
@@ -60,7 +62,7 @@ public class MessageService {
 		try {
 			logger.info("[MessageService] encrypting message for '" + message.getUser() + "'");
 			byte[] data = message.getMessage().getBytes(ENCODING);
-			byte[] encrypted = CryptSession.getInstance().ecrypt(data,message.getUser());
+			byte[] encrypted = CryptSession.getInstance().ecrypt(data,message.getUser(),sessionId);
 
 			message.setMessage(new String(Base64Coder.encode(encrypted)));
 
@@ -90,7 +92,8 @@ public class MessageService {
 	@Path("/decrypt")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putDecrypt(MessageItem message) {
+	public Response putDecrypt(MessageItem message,
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key
 		if (message == null) {
@@ -105,7 +108,7 @@ public class MessageService {
 			byte[] data = Base64Coder.decode(message.getMessage());
 					
 			byte[] decrypted = CryptSession.getInstance().decryptLocal(
-					data);
+					data,sessionId);
 			message.setMessage(new String(decrypted,ENCODING));
 
 			logger.info("decrypted=" + message.getMessage());

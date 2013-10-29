@@ -1,5 +1,7 @@
 package org.imixs.crypt.rest;
 
+import java.net.CookieManager;
+
 import javax.ws.rs.core.MediaType;
 
 import org.imixs.crypt.RestClient;
@@ -18,7 +20,8 @@ import org.junit.Test;
 public class NotesTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
-
+	String sessionId=null;
+	CookieManager cookieManager =null;
 	/**
 	 * Open Session
 	 */
@@ -29,6 +32,10 @@ public class NotesTest {
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
+			
+			// store the session cookie
+			cookieManager = restClient.getCookies();
+			
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 		} catch (Exception e) {
@@ -45,6 +52,7 @@ public class NotesTest {
 	public void testPostEncryptNotes() {
 
 		RestClient restClient = new RestClient();
+		restClient.setCookies(cookieManager);
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
 		String notesName = "test";
@@ -66,7 +74,9 @@ public class NotesTest {
 
 			uri = HOST + "/rest/notes/decrypt/" + notesName;
 			String result = null;
-
+			
+			// set session cookie
+			restClient.setCookies(cookieManager);
 			httpResult = restClient.get(uri);
 
 			result = restClient.getContent();

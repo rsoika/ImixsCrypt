@@ -100,6 +100,32 @@
 			saveData.error(function() { alert("Something went wrong"); });
 		}
 	}
+	
+	
+	
+	/* This posts the password and creates a session
+	*/
+	function login() {
+		// disable input
+		$("#password_id").prop('disabled', true);
+		// get password
+		var password=$("#password_id").val();
+		
+			
+		alert("open session and Sending password");
+	
+		var saveData = $.ajax({
+		      type: 'POST',
+		      dataType: "text",
+		      processData: false,
+		      contentType: 'text/plain',
+		      url: "http://localhost:4040/rest/session",
+		      data: password,
+		      success: function(resultData) { alert("Save Complete") }
+		});
+		saveData.error(function() { alert("Something went wrong"); });
+		
+	}
 </script>
 </head>
 
@@ -156,7 +182,7 @@
 				<span>Password:</span> <input type="password" id="password_id" /> <br />
 			</p>
 			<p>
-				<a class="btn btn-lg btn-success" href="#">Login</a>
+				<a class="btn btn-lg btn-success" href="#" onclick="login();">Login</a>
 			</p>
 		</div>
 

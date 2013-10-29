@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -41,7 +42,8 @@ public class NotesService {
 	@Path("/encrypt/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putNotes(String message, @PathParam("name") String name) {
+	public Response putNotes(String message, @PathParam("name") String name,
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key
 		if (message == null) {
@@ -56,7 +58,8 @@ public class NotesService {
 		try {
 
 			byte[] data = message.getBytes(ENCODING);
-			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data);
+			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data,
+					sessionId);
 
 			// save data into file
 			Files.write(
@@ -88,7 +91,8 @@ public class NotesService {
 	@GET
 	@Path("/decrypt/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getNotes(@PathParam("name") String name) {
+	public String getNotes(@PathParam("name") String name,
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 		String text = null;
 		// validate key
 		if (name == null || name.isEmpty()) {
@@ -101,7 +105,7 @@ public class NotesService {
 			byte[] data = Files.readAllBytes(Paths.get(CryptSession
 					.getInstance().getRootPath() + "data/notes/" + name));
 
-			byte[] decrypted = CryptSession.getInstance().decryptLocal(data);
+			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,sessionId);
 			text = new String(decrypted, ENCODING);
 
 			logger.info("[NotesService] decrypted=" + name);

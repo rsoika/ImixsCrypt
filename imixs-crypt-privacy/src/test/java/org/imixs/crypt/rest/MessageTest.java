@@ -2,6 +2,7 @@ package org.imixs.crypt.rest;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.CookieManager;
 import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -24,6 +25,7 @@ import org.junit.Test;
 public class MessageTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
+	CookieManager cookieManager =null;
 
 	/**
 	 * Open Session
@@ -35,6 +37,10 @@ public class MessageTest {
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
+			
+			// store the session cookie
+			cookieManager = restClient.getCookies();
+			
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 		} catch (Exception e) {
@@ -72,6 +78,7 @@ public class MessageTest {
 	public void testPostEncryptDecryptJsonMessage() {
 
 		RestClient restClient = new RestClient();
+		restClient.setCookies(cookieManager);
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
 		String uri = HOST + "/rest/message/encrypt/";
@@ -90,7 +97,7 @@ public class MessageTest {
 			// decrypt
 			uri = HOST + "/rest/message/decrypt/";
 			
-			
+			restClient.setCookies(cookieManager);
 			httpResult = restClient.post(uri, sContent);
 
 			sContent = restClient.getContent();
