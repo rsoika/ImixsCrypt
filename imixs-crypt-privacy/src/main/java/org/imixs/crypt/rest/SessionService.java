@@ -4,7 +4,6 @@ import java.security.PublicKey;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -17,13 +16,17 @@ import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.xml.KeyItem;
 
 /**
- * Provides a service to open / close a crypt session
+ * Provides a service to open and close a crypt session. 
+ * Setting the private key password creates a new sessionId. The sessionId 
+ * is stored in the cookie ImixsCryptSessionID. 
  * 
  * @author rsoika
  * 
  */
 @Path("/rest")
 public class SessionService {
+	
+	public final static String SESSION_COOKIE="ImixsCryptSessionID";
 
 	private final static Logger logger = Logger.getLogger(SessionService.class
 			.getName());
@@ -60,7 +63,7 @@ public class SessionService {
 					return Response
 							.status(Response.Status.INTERNAL_SERVER_ERROR)
 							.type(MediaType.TEXT_PLAIN)
-							.cookie(new NewCookie("ImixsCryptSessionID", ""))
+							.cookie(new NewCookie(SESSION_COOKIE, ""))
 							.build();
 				}
 			} else {
@@ -73,7 +76,7 @@ public class SessionService {
 
 		// update cookie
 		String newSessionId = CryptSession.getInstance().getSessionId();
-		NewCookie sessionCookie = new NewCookie("ImixsCryptSessionID",
+		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE,
 				newSessionId);
 
 		// success HTTP 200
