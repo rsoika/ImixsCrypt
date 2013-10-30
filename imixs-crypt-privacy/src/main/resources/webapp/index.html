@@ -22,110 +22,21 @@
       <script src="../../assets/js/respond.min.js"></script>
     <![endif]-->
 
-
-<script src="./jquery/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="./jquery/jquery-2.0.3.js"></script>
+<script type="text/javascript"
+	src="./tinymce/js/tinymce/jquery.tinymce.min.js"></script>
+<script type="text/javascript" src="./imixscrypt.js"></script>
 <script>
 	$(document).ready(function() {
+		initImixsCrypt();
+		//togglePage('workspace_id');
 
-		// Assign handlers immediately after making the request,
-		// and remember the jqxhr object for this request
-		var jqxhr = $.getJSON("/rest/session/", function(data) {
-			console.log("success");
-
-			if (data.key == null) {
-			//	$("#start_id").show();
-			//	$("#welcome_id").show();
-			//	$("#login_id").show();
-			} else {
-				//alert('we have a key :-)');
-				$("#welcome_id").hide();
-				$("#start_id").hide();
-				$("#login_id").show();
-			}
-		}).done(function() {
-			console.log("second success");
-		}).fail(function() {
-			console.log("error");
-		}).always(function() {
-			console.log("complete");
+		// http://www.tinymce.com/wiki.php/TinyMCE3x:jQuery_Plugin
+		$('.tinymce').tinymce({
+			script_url : './tinymce/js/tinymce/tinymce.min.js'
+		// Optional parameters
 		});
-
-		// Perform other work here ...
-
-		// Set another completion function for the request above
-		jqxhr.complete(function() {
-			console.log("second complete");
-		});
-
 	});
-	
-	function startNew() {
-		$("#start_id").show();
-		$("#welcome_id").hide();
-		$("#login_id").hide();
-	}
-	
-	/* This method verifies the password input and starts a key generation
-	*/
-	function createKey() {
-		// disable input
-		password1=$("#password_id1").prop('disabled', true);
-		password2=$("#password_id2").prop('disabled', true);
-		// get password
-		var password1=$("#password_id1").val();
-		var password2=$("#password_id2").val();
-		if (password1 != password2) {
-			// enable input
-			password1=$("#password_id1").prop('disabled', false);
-			password2=$("#password_id2").prop('disabled', false);
-			alert('Password not correct!');
-			
-			
-			
-			password1=$("#password_id1").val('');
-			password2=$("#password_id2").val('');
-		} else {
-			
-			alert("Sending password");
-		
-			var saveData = $.ajax({
-			      type: 'POST',
-			      dataType: "text",
-			      processData: false,
-			      contentType: 'text/plain',
-			      url: "http://localhost:4040/rest/session",
-			      data: password1,
-			      success: function(resultData) { alert("Save Complete") }
-			});
-			saveData.error(function() { alert("Something went wrong"); });
-		}
-	}
-	
-	
-	
-	/* This posts the password and creates a session
-	*/
-	function login() {
-		// disable input
-		$("#password_id").prop('disabled', true);
-		// get password
-		var password=$("#password_id").val();
-		
-			
-		alert("open session and Sending password");
-	
-		var saveData = $.ajax({
-		      type: 'POST',
-		      dataType: "text",
-		      processData: false,
-		      contentType: 'text/plain',
-		      url: "http://localhost:4040/rest/session",
-		      data: password,
-		      success: function(resultData) { alert("Save Complete") }
-		});
-		saveData.error(function() { alert("Something went wrong"); });
-		
-	}
 </script>
 </head>
 
@@ -133,29 +44,72 @@
 
 	<div class="container">
 		<div class="header">
+
 			<ul class="nav nav-pills pull-right">
 				<li class="active"><a href="./index.html">Home</a></li>
 				<li><a href="#">About</a></li>
 				<li><a href="#">Contact</a></li>
+				<li><a href="#">Logout</a></li>
+
 			</ul>
+
+
 			<h3 class="text-muted">My private crypt server</h3>
 		</div>
 
+		<div id="welcome_id">
 
-		<div id="welcome_id" class="jumbotron">
-			<h1>Welcome to ImixsCrypt</h1>
-			<p class="lead">ImixsCrypt is your private web server. 
-			ImixsCrypt protects your notes, makes your messaging confidential 
-			and provides a secure authentication.</p>
-			<p>
-				<a class="btn btn-lg btn-success" href="#" onclick="startNew();">Start now...</a>
-			</p>
+			<div class="jumbotron">
+				<h1>Welcome to ImixsCrypt</h1>
+				<p class="lead">ImixsCrypt is your private web server.
+					ImixsCrypt protects your notes, makes your messaging confidential
+					and provides a secure authentication.</p>
+				<p>
+					<a class="btn btn-lg btn-success" href="#"
+						onclick="togglePage('start_id');">Start now...</a>
+				</p>
+
+			</div>
+
+
+
+
+			<div class="row marketing">
+				<div class="col-lg-6">
+					<h4>Your privacy</h4>
+					<p>We think that your privacy is one of the most important
+						things when using the internt. Imixs private crypt server gives
+						you back the control of your privac.</p>
+
+					<h4>Don't trust the net</h4>
+					<p>You should not trust server in the internet which you have
+						no control about. Imixs private crypt is a local server. It only
+						runs on your local mashine.</p>
+
+					<h4>Never share your passwords</h4>
+					<p>You should not give anyone your private password. And
+						certainly not any unknown Internet server. With Imixs private
+						crypt there is no need to give your password away!</p>
+
+					<h4>Cryptography</h4>
+					<p>Cryptography is nothing new. It exitss before the internet
+						becomes part of your live. Imixs crypt uses a well known and
+						trustable crypthography alogrithm called RSA. Read was RSA is and
+						how it works.</p>
+
+
+				</div>
+			</div>
+
+
+
 		</div>
 
 		<div id="start_id" class="jumbotron" style="display: none">
 			<h1>Start and Login</h1>
 			<p class="lead">First you need to create your private key. With
-				your private key you can start and login into your private crypt server.</p>
+				your private key you can start and login into your private crypt
+				server.</p>
 			<table align="center">
 				<tr>
 					<td><span>Your password:</span></td>
@@ -170,7 +124,8 @@
 			</table>
 
 			<p>
-				<a class="btn btn-lg btn-success" href="#" onclick="createKey();">Create Key</a>
+				<a class="btn btn-lg btn-success" href="#" onclick="createKey();">Create
+					Key</a>
 			</p>
 		</div>
 
@@ -191,32 +146,98 @@
 
 
 
-		<div class="row marketing">
-			<div class="col-lg-6">
-				<h4>Your privacy</h4>
-				<p>We think that your privacy is one of the most important
-					things when using the internt. Imixs private crypt server gives you
-					back the control of your privac.</p>
-
-				<h4>Don't trust the net</h4>
-				<p>You should not trust server in the internet which you have no
-					control about. Imixs private crypt is a local server. It only runs
-					on your local mashine.</p>
-
-				<h4>Never share your passwords</h4>
-				<p>You should not give anyone your private password. And
-					certainly not any unknown Internet server. With Imixs private crypt
-					there is no need to give your password away!</p>
-
-				<h4>Cryptography</h4>
-				<p>Cryptography is nothing new. It exitss before the internet
-					becomes part of your live. Imixs crypt uses a well known and
-					trustable crypthography alogrithm called RSA. Read was RSA is and
-					how it works.</p>
 
 
+
+
+
+
+
+		<div id="workspace_id">
+			<a class="btn btn btn-danger pull-right" href="#" onclick="login();">Logout</a>
+			<ul class="nav nav-tabs">
+				<li class="active"><a href="#workspace_notes" data-toggle="tab">My
+						Notes</a></li>
+				<li><a href="#workspace_chat" data-toggle="tab">Chat</a></li>
+				<li><a href="#workspace_myprofile" data-toggle="tab">My
+						Profile</a></li>
+			</ul>
+
+			<div class="tab-content">
+
+
+				<!-- Notes Section -->
+				<div class="tab-pane active" id="workspace_notes">
+
+					<br />
+					<div id="notes_table">
+						<a class="btn btn btn-success" href="#" onclick="createNote();">Create
+							new Note</a> <br />
+						<table class="table">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>First Name</th>
+									<th>Last Name</th>
+									<th>Username</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>1</td>
+									<td>Mark</td>
+									<td>Otto</td>
+									<td>@mdo</td>
+								</tr>
+								<tr>
+									<td>2</td>
+									<td>Jacob</td>
+									<td>Thornton</td>
+									<td>@fat</td>
+								</tr>
+								<tr>
+									<td>3</td>
+									<td>Larry</td>
+									<td>the Bird</td>
+									<td>@twitter</td>
+								</tr>
+							</tbody>
+						</table>
+
+					</div>
+					<div id="notes_editor" style="display: none;">
+					
+						<h4>Title:<input type="text" id="notes_title" class=""
+						style="margin-left:10px;" /></h4>
+					
+					
+						<textarea class="tinymce" rows="5" cols="5"></textarea>
+						
+					
+						<br />
+						
+						<a class="btn btn btn-success" href="#" onclick="createNote();">Save</a>
+						 <a class="btn btn-default" href="#" onclick="closeNote();">Close</a>
+						<br /><br />
+					</div>
+
+
+				</div>
+
+
+				<!-- Chat Section -->
+				<div class="tab-pane" id="workspace_chat">.chata..</div>
+
+
+				<!-- Profile Section -->
+				<div class="tab-pane" id="workspace_myprofile">not yet
+					implemented</div>
 			</div>
+
+
+
 		</div>
+
 
 		<div class="footer">
 			<p>&copy; Company 2013</p>
@@ -229,7 +250,7 @@
 	<!-- Bootstrap core JavaScript
     ================================================== -->
 	<!-- Placed at the end of the document so the pages load faster -->
-
 	<script src="bootstrap/js/bootstrap.min.js"></script>
+
 </body>
 </html>
