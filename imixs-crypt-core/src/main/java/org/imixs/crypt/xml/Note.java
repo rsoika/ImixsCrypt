@@ -26,22 +26,24 @@
  *******************************************************************************/
 package org.imixs.crypt.xml;
 
+import java.util.Date;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Represents a single notes item.
+ * Represents a list of file information
  * 
  * @author rsoika 
  * 
  */
 @XmlRootElement(name = "notesItem")
-public class NotesItem implements java.io.Serializable {
+public class Note implements java.io.Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private String name;
-	private String message;
+	private Date modified;;
 
 	
 
@@ -53,12 +55,14 @@ public class NotesItem implements java.io.Serializable {
 		this.name = name;
 	}
 
-	public String getMessage() {
-		return message;
+	public Date getModified() {
+		return modified;
 	}
 
-	public void setMessage(String message) {
-		this.message = message;
+	public void setModified(Date modified) {
+		this.modified = modified;
 	}
+
+	
 
 }

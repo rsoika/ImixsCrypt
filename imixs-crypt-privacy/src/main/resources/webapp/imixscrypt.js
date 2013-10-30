@@ -21,23 +21,22 @@
  * 
  */
 
-var pageSections = [ 'welcome_id','start_id','login_id','workspace_id' ];
+var pageSections = [ 'welcome_id', 'start_id', 'login_id', 'workspace_id' ];
 
 /*
  * Toggle the current page section
  */
 function togglePage(section) {
-	$.each( pageSections, function( index, value ){
-		if (section==value) {
-			if (!$('#'+value).is(":visible"))
-				$('#'+value).show();
+	$.each(pageSections, function(index, value) {
+		if (section == value) {
+			if (!$('#' + value).is(":visible"))
+				$('#' + value).show();
 		} else {
-			if ($('#'+value).is(":visible"))
-				$('#'+value).hide();
+			if ($('#' + value).is(":visible"))
+				$('#' + value).hide();
 		}
 	});
-	
-	
+
 }
 
 /*
@@ -65,7 +64,6 @@ function initImixsCrypt() {
 	});
 
 }
-
 
 /*
  * This method verifies the password input and starts a key generation
@@ -114,7 +112,7 @@ function login() {
 	// get password
 	var password = $("#password_id").val();
 
-	//open session and Sending password 
+	// open session and Sending password
 	var saveData = $.ajax({
 		type : 'POST',
 		dataType : "text",
@@ -123,7 +121,11 @@ function login() {
 		url : "http://localhost:4040/rest/session",
 		data : password,
 		success : function(resultData) {
-			// Login successful and session started -  switch to workspace
+
+			// read notes
+			readNotes();
+
+			// Login successful and session started - switch to workspace
 			togglePage('workspace_id');
 		}
 	});
@@ -133,17 +135,46 @@ function login() {
 
 }
 function createNote() {
-	
-	 $("#workspace_notes #notes_table").hide();
-	 $("#workspace_notes #notes_editor").show();
-	
-	
+
+	$("#workspace_notes #notes_table").hide();
+	$("#workspace_notes #notes_editor").show();
+
 }
 
 function closeNote() {
+
+	$("#workspace_notes #notes_table").show();
+	$("#workspace_notes #notes_editor").hide();
+
+}
+
+/*
+ * Read all notes from the local data directory
+ */
+function readNotes() {
+
+	// get public key....
+	$.getJSON("/rest/notes/", function(data) {
+		console.log("success");
+		if (data != null) {
+			// build list
+			var tableBody = $('#notes_table .table tbody');
+			$.each(data, function(index, value) {
+				var d = new Date();
+				d.setTime(value.modified);
+				
+				var html = $('<tr><td>' + index + '</td><td>' + value.name + '</td><td>' + d + '</td></tr>');
+				tableBody.append(	html);
+			});
 	
-	 $("#workspace_notes #notes_table").show();
-	 $("#workspace_notes #notes_editor").hide();
-	
-	
+
+		}
+	}).done(function() {
+		console.log("second success");
+	}).fail(function() {
+		console.log("error");
+	}).always(function() {
+		console.log("complete");
+	});
+
 }

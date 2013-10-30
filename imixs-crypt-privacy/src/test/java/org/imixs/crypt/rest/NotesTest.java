@@ -94,5 +94,52 @@ public class NotesTest {
 		}
 
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * Test list of notes
+	 */
+	@Test
+	public void testReadNotes() {
+
+		RestClient restClient = new RestClient();
+		restClient.setCookies(cookieManager);
+		restClient.setMediaType(MediaType.APPLICATION_JSON);
+
+		
+
+		String uri = HOST + "/rest/notes/";
+	
+		try {
+			int httpResult = restClient.get(uri);
+
+			String sContent = restClient.getContent();
+
+			System.out.println(sContent);
+			// expected result 200
+			Assert.assertEquals(200, httpResult);
+
+		
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+	}
 
 }

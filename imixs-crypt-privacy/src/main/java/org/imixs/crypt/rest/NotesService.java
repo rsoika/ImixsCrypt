@@ -1,7 +1,11 @@
 package org.imixs.crypt.rest;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
@@ -14,11 +18,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.imixs.crypt.xml.Note;
+
 /**
  * The Notes Service ecnrypts and decrypt local data with the local key pair
  * 
- * 
  * Encrypted Messages will be base64 encoded
+ * 
+ * The method getNotes returns a list of all notes stored in the local data
+ * directory
  * 
  * @author rsoika
  * 
@@ -42,7 +50,7 @@ public class NotesService {
 	@Path("/encrypt/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putNotes(String message, @PathParam("name") String name,
+	public Response putNote(String message, @PathParam("name") String name,
 			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key
@@ -91,7 +99,7 @@ public class NotesService {
 	@GET
 	@Path("/decrypt/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public String getNotes(@PathParam("name") String name,
+	public String getNote(@PathParam("name") String name,
 			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 		String text = null;
 		// validate key
@@ -99,13 +107,14 @@ public class NotesService {
 			return null;
 		}
 
-		// find the users public key....
+		// decrypt file
 		try {
 
 			byte[] data = Files.readAllBytes(Paths.get(CryptSession
 					.getInstance().getRootPath() + "data/notes/" + name));
 
-			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,sessionId);
+			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
+					sessionId);
 			text = new String(decrypted, ENCODING);
 
 			logger.info("[NotesService] decrypted=" + name);
@@ -118,6 +127,41 @@ public class NotesService {
 		// success HTTP 200
 		return text;
 
+	}
+
+	/**
+	 * This method returns a list with all notes
+	 * 
+	 * The message is expected in base64 encoded data!
+	 * 
+	 * @param keyItem
+	 * 
+	 */
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<Note> getNotes(
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+	
+		if (!CryptSession.getInstance().isValidSession(sessionId))
+			return null;
+	
+		File folder = new File(CryptSession.getInstance().getRootPath() + "data/notes");
+		File[] listOfFiles = folder.listFiles();
+
+		List<Note> result=new ArrayList<>();
+		for (File file:  listOfFiles) {
+			Long lastModified=file.lastModified();
+			String name=file.getName();
+			
+			Note note=new Note();
+			note.setModified(new Date(lastModified));
+			note.setName(name);
+			result.add(note);
+		}
+	
+
+		return result;
 	}
 
 }
