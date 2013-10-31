@@ -6,7 +6,7 @@ bin/
 target/
 
 # ignore resource folders
-src/test/resources/
+*/src/test/resources/
 
 # ignore all files ending with ~
 *~ 
