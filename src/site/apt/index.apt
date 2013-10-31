@@ -1,16 +1,17 @@
-Imixs Open Crypt Server
+ImixsCrypt 
 ~~~~~~~~~~~~~~
 
-
- Imixs Crypt provides an API to in a secure and transparent way for 
+ ImixsCrypt provides an API for a secure and transparent privacy. ImixsCrypt allows you to 
  
-  communication
-  privacy
-  and Authentication
-  s
-
-
-
+  * chat with friends using an encrypted communication
+  
+  * encrypt private informations
+  
+  * use an secure authentication framework
+  
+  
+About ImixsCrypt
+~~~~~~~~~~~~~~ 
 
  In the year 2013 we all learned that we can not trust into the open Internet. 
  Things which should be secure like private communication or shared documents in a open space
