@@ -47,10 +47,10 @@
 		<div class="header">
 
 			<ul class="nav nav-pills pull-right">
-				
+
 				<li><a href="#">About</a></li>
 				<li><a href="#">Contact</a></li>
-			<li class="active"><a href="./index.html">Home</a></li>
+				<li class="active"><a href="./index.html">Home</a></li>
 			</ul>
 
 
@@ -77,21 +77,25 @@
 			<div class="row marketing">
 				<div class="col-lg-6">
 					<h4>Your privacy</h4>
-					<p>We think that your privacy is one of the most important
-						things when using the internt. Imixs private crypt server gives
-						you back the control of your privac.</p>
-
-					<h4>Don't trust the net</h4>
-					<p>You should not trust server in the internet which you have
-						no control about. Imixs private crypt is a local server. It only
-						runs on your local mashine.</p>
-
-					<h4>Never share your passwords</h4>
-					<p>You should not give anyone your private password. And
-						certainly not any unknown Internet server. With Imixs private
-						crypt there is no need to give your password away!</p>
-
-					<h4>Cryptography</h4>
+					<p>We think that your privacy is one of the most valuable
+						things when your are using the Internet. ImixsCrypt gives
+						you back the control of your privacy.</p>
+				</div>
+				<div class="col-lg-6">
+					<h4>Don't trust</h4>
+					<p>You should not trust any servers in the Internet which you have
+						no control about. ImixsCrypt gives you a private  local webserver. 
+						ImixsCrypt only
+						runs on your local machine which you should trust in.</p>
+				</div>
+				<div class="col-lg-6" style="clear:left;">
+					<h4>Keep your secrets</h4>
+					<p>There is no reason to trust anyone in the Internet your secrets or your private password.
+					Don't believe that this is necessary. 
+					With ImixsCrypt there is an easy solution to safely navigate the Internet.</p>
+				</div>
+				<div class="col-lg-6">
+					<h4>Use Cryptography</h4>
 					<p>Cryptography is nothing new. It exitss before the internet
 						becomes part of your live. Imixs crypt uses a well known and
 						trustable crypthography alogrithm called RSA. Read was RSA is and
@@ -146,7 +150,7 @@
 
 
 
-		<div id="workspace_id">
+		<div id="workspace_id" style="display: none;">
 			<a class="btn btn btn-danger pull-right" href="#" onclick="login();">Logout</a>
 			<ul class="nav nav-tabs">
 				<li class="active"><a href="#workspace_notes" data-toggle="tab">My
@@ -175,25 +179,26 @@
 								</tr>
 							</thead>
 							<tbody>
-								
+
 							</tbody>
 						</table>
 
 					</div>
 					<div id="notes_editor" style="display: none;">
-					
-						<h4>Title:<input type="text" id="notes_title" class=""
-						style="margin-left:10px;" /></h4>
-					
-					
+
+						<h4>
+							Title:<input type="text" id="notes_title" class=""
+								style="margin-left: 10px;" />
+						</h4>
+
+
 						<textarea class="tinymce" rows="5" cols="5"></textarea>
-						
-					
+
+
+						<br /> <a class="btn btn btn-success" href="#"
+							onclick="saveNote();">Save</a> <a class="btn btn-default"
+							href="#" onclick="closeNote();">Close</a> <br />
 						<br />
-						
-						<a class="btn btn btn-success" href="#" onclick="saveNote();">Save</a>
-						 <a class="btn btn-default" href="#" onclick="closeNote();">Close</a>
-						<br /><br />
 					</div>
 
 
@@ -201,8 +206,7 @@
 
 
 				<!-- Chat Section -->
-				<div class="tab-pane" id="workspace_chat">not yet
-					implemented</div>
+				<div class="tab-pane" id="workspace_chat">not yet implemented</div>
 
 
 				<!-- Profile Section -->

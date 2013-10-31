@@ -14,27 +14,30 @@ About ImixsCrypt
 ~~~~~~~~~~~~~~ 
 
  In the year 2013 we all learned that we can not trust into the open Internet. 
- Things which should be secure like private communication or shared documents in a open space
- can be infiltriert from others we did not know. 
+ Things which should be secure like private communication or shared documents in an open space
+ can be infiltrated from others we did not know. 
 
 *Why That is a problem? 
 ~~~~~~~~~~~~~~ 
- In the beginning of the internet in year 19.. that was not the problem. The internet was founded 
- to build a open plattform to share any kind of information. without borders and without hidden 
- cermercial back thoghts.
- Today we use the intert as a kommuination or business plattform. And we expect that the internet 
- is secure and we can trust it. But we learnd that isn't sure. 
+ In the beginning of the Internet in year 1989 that was not the problem. The internet was founded 
+ to build a open platform to share any kind of information. Without borders and without hidden 
+ commercial back thoughts.
+ Today we use the Internet as a communication and business platform in various technical aspects. 
+ And we expect that the Internet 
+ is secure and we can trust it. But we learned that this isn't true. 
 
 *So what can we do? Why?
 ~~~~~~~~~~~~~~
- We beleive that privacy and security are some of the valuablest things unsing the internet today. 
- To give yout back the control of your own privacy we started the project 'Open Crypt Server'. 
- The goals of this project is to provide every internet user with a peace of open source software 
- to control his own securtiy and privacy. And as this softwarere is a server it becomes part of the
- internet itself. This means Open Crypt Server is a server node which becomes part of your communication 
- through the interent. But Open Crypt Server is absolut privacy. It runs local on your onw computer. 
- It secures and encrypts your Information before you give them back into the internet. This is the way 
- of a scecure and trusable communication through the open internet. 
+ We believe that privacy and security are some of the most valuable things using the Internet today. 
+ To give you back the control of your own privacy we started the project 'ImixsCrypt'. 
+ The goals of this project is to provide every Internet user with a peace of open source software 
+ to control his own security and privacy. And as this software is a server it becomes part of the
+ Internet itself using the basic concept of the Internet - HTTP. 
+ This means ImixsCrypt is your private web server. And you can use it 
+ for your communication when using the Internet. 
+ ImixsCrypt runs local on your own computer. 
+ It secures and encrypts your information before you give them back into the Internet. This is a secure way 
+ to communicate with the open Internet. 
 
 *How it works?
 ~~~~~~~~~~~~~~ 

@@ -25,7 +25,7 @@
 			<artifactId>jersey-json</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
-		
+
 
 		<!-- Direct Dependency for grizzly 2.3.6 support -->
 		<dependency>
@@ -43,16 +43,23 @@
 			<artifactId>grizzly-http-server</artifactId>
 			<version>2.3.6</version>
 		</dependency>
-		
-		
+
+
 		<!-- Imixs Security Core API -->
 		<dependency>
 			<groupId>org.imixs.security</groupId>
 			<artifactId>imixs-crypt-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
-		
+
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			
+		</dependency>
+
 		<!-- JUnit Tests -->
 		<dependency>
 			<groupId>junit</groupId>

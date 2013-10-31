@@ -1,0 +1,46 @@
+https://developers.google.com/accounts/docs/OpenID
+
+
+
+1) wir bekommen einen request auf localhost:4040/rest/auth/openid
+
+Enthaten ist die Return_to adresse :-)
+
+wir redirekten so:
+
+http://localhost:4040/rest/auth/openid
+?openid.ns=http://specs.openid.net/auth/2.0
+&openid.claimed_id=http://specs.openid.net/auth/2.0/identifier_select
+&openid.identity=http://specs.openid.net/auth/2.0/identifier_select
+&openid.return_to=http://www.example.com/checkauth
+&openid.realm=http://www.example.com/
+&openid.assoc_handle=ABSmpf6DNMw
+&openid.mode=checkid_setup
+
+assoc ist irgendwas...
+
+
+
+2)  unserer anwort
+
+bei unscessufll: 
+http://www.example.com/checkauth
+?openid.mode=cancel
+&openid.ns=http://specs.openid.net/auth/2.0
+
+
+Bei ok:
+
+
+http://www.example.com/checkauth
+?openid.ns=http://specs.openid.net/auth/2.0
+&openid.mode=id_res
+&openid.op_endpoint=https://www.google.com/accounts/o8/ud
+&openid.response_nonce=2008-09-18T04:14:41Zt6shNlcz-MBdaw
+&openid.return_to=http://www.example.com:8080/checkauth
+&openid.assoc_handle=ABSmpf6DNMw
+&openid.signed=op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle
+&openid.sig=s/gfiWSVLBQcmkjvsKvbIShczH2NOisjzBLZOsfizkI=
+&openid.identity=ralpus
+&openid.claimed_id=ralpus
+
