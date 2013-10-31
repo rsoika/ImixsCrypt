@@ -134,12 +134,79 @@ function login() {
 	});
 
 }
-function createNote() {
+
+/**
+ * Opens the note editor to edit the note. If not name is given a new note is
+ * created. If a name is given a ajax request is started to load the text.
+ */
+function editNote(name) {
 
 	$("#workspace_notes #notes_table").hide();
 	$("#workspace_notes #notes_editor").show();
 
+	// load notes per ajax
+	if (name != null) {
+		// decrypt data
+		$.ajax({
+			type : 'GET',
+			dataType : "text",
+			processData : false,
+			contentType : 'application/json',
+			url : "/rest/notes/decrypt/" + name,
+			success : function(data) {
+				console.log("success");
+				//alert(data);
+				if (data != null) {
+					// fill editor
+					$('#notes_editor textarea.tinymce').html(data);
+					$('#notes_editor #notes_title').val(name);
+					
+				}
+			}
+		});
+
+	}
+
 }
+
+
+/**
+ * Saves the data of the note editor.
+ */
+function saveNote() {
+
+	var content=$('#notes_editor textarea.tinymce').tinymce().getContent(); 
+	var name=$('#notes_editor #notes_title').val();
+	
+
+	// load notes per ajax
+	if (name != null) {
+		// decrypt data
+		$.ajax({
+			type : 'POST',
+			dataType : "text",
+			processData : false,
+			contentType : 'application/json',
+			data : content,
+			url : "/rest/notes/encrypt/" + name,
+			success : function() {
+				console.log("success");
+				//alert('Encrypted!');
+				$("#workspace_notes #notes_editor").hide();
+				$("#workspace_notes #notes_table").show();
+				readNotes();
+			}
+		});
+
+	}
+
+	
+
+}
+
+
+
+
 
 function closeNote() {
 
@@ -153,23 +220,28 @@ function closeNote() {
  */
 function readNotes() {
 
-	// get public key....
-	$.getJSON("/rest/notes/", function(data) {
-		console.log("success");
-		if (data != null) {
-			// build list
-			var tableBody = $('#notes_table .table tbody');
-			$.each(data, function(index, value) {
-				var d = new Date();
-				d.setTime(value.modified);
-				
-				var html = $('<tr><td>' + index + '</td><td>' + value.name + '</td><td>' + d + '</td></tr>');
-				tableBody.append(	html);
-			});
-	
+	// get note list....
+	$.getJSON(
+			"/rest/notes/",
+			function(data) {
+				console.log("success");
+				if (data != null) {
+					// build list
+					var tableBody = $('#notes_table .table tbody');
+					tableBody.empty();
+					$.each(data, function(index, value) {
+						var d = new Date();
+						d.setTime(value.modified);
 
-		}
-	}).done(function() {
+						var html = $("<tr><td>" + index
+								+ "</td><td><a href='#' onclick=\"editNote('"
+								+ value.name + "');\">" + value.name
+								+ "</a></td><td>" + d + "</td></tr>");
+						tableBody.append(html);
+					});
+
+				}
+			}).done(function() {
 		console.log("second success");
 	}).fail(function() {
 		console.log("error");
@@ -178,3 +250,13 @@ function readNotes() {
 	});
 
 }
+
+
+
+
+
+
+
+
+
+
