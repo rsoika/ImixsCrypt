@@ -161,13 +161,71 @@ function editNote(name) {
 					$('#notes_editor textarea.tinymce').html(data);
 					$('#notes_editor #notes_title').val(name);
 					
+				} else {
+					// corrupted data
+					alert("Unable to decrypt data '"+ name + "'. Please verify your data files!");
+					// clear input data
+					$('#notes_editor textarea.tinymce').html('');
+					$('#notes_editor #notes_title').val('');
+					$("#workspace_notes #notes_editor").hide();
+					$("#workspace_notes #notes_table").show();
 				}
+			},
+			error : function(data) {
+				alert('An error ocurred during decryption!');
+				// clear input data
+				$('#notes_editor textarea.tinymce').html('');
+				$('#notes_editor #notes_title').val('');
+				$("#workspace_notes #notes_editor").hide();
+				$("#workspace_notes #notes_table").show();
 			}
 		});
 
+	} else {
+		// clear input data
+		$('#notes_editor textarea.tinymce').html('');
+		$('#notes_editor #notes_title').val('');
 	}
 
 }
+
+
+
+/**
+ * Opens the note editor to edit the note. If not name is given a new note is
+ * created. If a name is given a ajax request is started to load the text.
+ */
+function deleteNote(name) {
+	
+	if (!confirm("Delete '"+name + "' ?"))
+		return;
+	if (!confirm("Are you really sure ?"))
+		return;
+	
+	// delete per ajax POST request
+	if (name != null) {
+		// decrypt data
+		$.ajax({
+			type : 'DELETE',
+			dataType : "text",
+			processData : false,
+			contentType : 'application/json',
+			url : "/rest/notes/" + name,
+			success : function(data) {
+				console.log("success");
+				//alert('data delted');
+				readNotes();
+			},
+			error : function(data) {
+				alert('An error ocurred during deletion of data!');
+				
+			}
+		});
+	}
+}
+
+
+
 
 
 /**
@@ -233,10 +291,13 @@ function readNotes() {
 						var d = new Date();
 						d.setTime(value.modified);
 
+						var aDelete="<td><a href='#' onclick=\"deleteNote('"
+								+ value.name + "');\">Delete</a></td>;";
+						
 						var html = $("<tr><td>" + index
 								+ "</td><td><a href='#' onclick=\"editNote('"
 								+ value.name + "');\">" + value.name
-								+ "</a></td><td>" + d + "</td></tr>");
+								+ "</a></td><td>" + d + "</td>" + aDelete + "</tr>");
 						tableBody.append(html);
 					});
 

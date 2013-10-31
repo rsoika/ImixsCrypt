@@ -26,6 +26,7 @@
 package org.imixs.crypt.rest;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -167,26 +169,63 @@ public class NotesService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Note> getNotes(
 			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
-	
+
 		if (!CryptSession.getInstance().isValidSession(sessionId))
 			return null;
-	
-		File folder = new File(CryptSession.getInstance().getRootPath() + "data/notes");
+
+		File folder = new File(CryptSession.getInstance().getRootPath()
+				+ "data/notes");
 		File[] listOfFiles = folder.listFiles();
 
-		List<Note> result=new ArrayList<>();
-		for (File file:  listOfFiles) {
-			Long lastModified=file.lastModified();
-			String name=file.getName();
-			
-			Note note=new Note();
+		List<Note> result = new ArrayList<>();
+		for (File file : listOfFiles) {
+			Long lastModified = file.lastModified();
+			String name = file.getName();
+
+			Note note = new Note();
 			note.setModified(new Date(lastModified));
 			note.setName(name);
 			result.add(note);
 		}
-	
 
 		return result;
+	}
+
+	/**
+	 * This method deletes a note
+	 * 
+	 */
+	@DELETE
+	@Path("/{name}")
+	public Response deleteNote(@PathParam("name") String name,
+			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+
+		// validate key
+		if (name == null || name.isEmpty()) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+		}
+		if (!CryptSession.getInstance().isValidSession(sessionId))
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+
+		logger.info("[NotesService] delete '" + name + "'");
+		// delete file
+		try {
+			Files.delete(Paths.get(CryptSession.getInstance().getRootPath()
+					+ "data/notes/" + name));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+
+		// success HTTP 200
+		return Response.status(Response.Status.OK)
+				.type(MediaType.APPLICATION_JSON).build();
+
 	}
 
 }
