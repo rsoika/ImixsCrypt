@@ -38,7 +38,7 @@ public class RSATest {
 	 * 
 	 */
 	@Before
-	public void setup() {
+	public void setup() { 
 		try {
 			final KeyPairGenerator keyGen = KeyPairGenerator
 					.getInstance(ALGORITHM);

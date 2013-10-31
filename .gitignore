@@ -5,6 +5,9 @@ bin/
 # ignore all target directories
 target/
 
+# ignore resource folders
+src/test/resources/
+
 # ignore all files ending with ~
 *~ 
 

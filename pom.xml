@@ -26,4 +26,6 @@
 			</plugin>
 		</plugins>
 	</build>
+	<name>Imixs Crypt</name>
+	<description> Imixs Crypt provides an API for a secure and transparent privacy.</description>
 </project>

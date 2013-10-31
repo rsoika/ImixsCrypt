@@ -65,7 +65,7 @@ public class ImixsRSAKeyUtilTest {
 	@Test
 	public void generateKeyTest() throws Exception {
 		rsaKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE, null);
-
+ 
 		// test with password
 		rsaKeyUtil.generateKeyPair(PRIVATE_KEY_FILE, PUBLIC_KEY_FILE,
 				"mypassword");
