@@ -78,21 +78,22 @@
 				<div class="col-lg-6">
 					<h4>Your privacy</h4>
 					<p>We think that your privacy is one of the most valuable
-						things when your are using the Internet. ImixsCrypt gives
-						you back the control of your privacy.</p>
+						things when your are using the Internet. ImixsCrypt gives you back
+						the control of your privacy.</p>
 				</div>
 				<div class="col-lg-6">
 					<h4>Don't trust</h4>
-					<p>You should not trust any servers in the Internet which you have
-						no control about. ImixsCrypt gives you a private  local webserver. 
-						ImixsCrypt only
-						runs on your local machine which you should trust in.</p>
+					<p>You should not trust any servers in the Internet which you
+						have no control about. ImixsCrypt gives you a private local
+						webserver. ImixsCrypt only runs on your local machine which you
+						should trust in.</p>
 				</div>
-				<div class="col-lg-6" style="clear:left;">
+				<div class="col-lg-6" style="clear: left;">
 					<h4>Keep your secrets</h4>
-					<p>There is no reason to trust anyone in the Internet your secrets or your private password.
-					Don't believe that this is necessary. 
-					With ImixsCrypt there is an easy solution to safely navigate the Internet.</p>
+					<p>There is no reason to trust anyone in the Internet your
+						secrets or your private password. Don't believe that this is
+						necessary. With ImixsCrypt there is an easy solution to safely
+						navigate the Internet.</p>
 				</div>
 				<div class="col-lg-6">
 					<h4>Use Cryptography</h4>
@@ -109,37 +110,54 @@
 
 		</div>
 
-		<div id="start_id" class="jumbotron" style="display: none">
-			<h1>Start and Login</h1>
-			<p class="lead">First you need to create your private key. With
-				your private key you can start and login into your private crypt
-				server.</p>
-			<table align="center">
-				<tr>
-					<td><span>Your password:</span></td>
-					<td><input type="password" id="password_id1"
-						style="font-size: 14px;" /></td>
-				</tr>
-				<tr>
-					<td><span>Reenter password:</span></td>
-					<td><input type="password" id="password_id2"
-						style="font-size: 14px;" /></td>
-				</tr>
-			</table>
+		<div id="start_id" style="display: none">
 
-			<p>
-				<a class="btn btn-lg btn-success" href="#" onclick="createKey();">Create
-					Key</a>
-			</p>
+			<div class="jumbotron">
+				<h1>Start and Login</h1>
+				<p class="lead">First you need to create your private key. With
+					your private key you can start and login into your private crypt
+					server.</p>
+			</div>
+			<form role="form">
+				<div class="form-group">
+					<label for="exampleInputEmail1">My Email address</label> <input
+						type="email" class="form-control" id="exampleInputEmail1"
+						placeholder="Enter email">
+				</div>
+
+				<div class="form-group">
+					<label for="password_id1">My Password</label>
+
+					<div>
+						<input type="password" class="form-control" id="password_id1"
+							placeholder="Password"
+							style="width: 30%; min-width: 170px; float: left; margin-right: 20px;">
+						<input type="password" class="form-control" id="password_id2"
+							placeholder="Reenter Password"
+							style="margin-left: 10px; width: 30%; min-width: 170px; float: left; margin-right: 20px;">
+
+						<a class="btn btn-success" href="#" onclick="createKey();">Create
+							my private key...</a>
+					</div>
+				</div>
+
+
+				<br />
+			</form>
+
 		</div>
 
 		<div id="login_id" class="jumbotron" style="display: none">
 			<h1>Start and Login</h1>
 			<p class="lead">Login with your private key password to start
 				your private crypt server.</p>
-			<p style="align: left;">
-				<span>Password:</span> <input type="password" id="password_id" /> <br />
-			</p>
+
+			<div class="form-group">
+				<label for="password_id">Password</label> <input type="password"
+					id="password_id" placeholder="Your Password" />
+
+			</div>
+
 			<p>
 				<a class="btn btn-lg btn-success" href="#" onclick="login();">Login</a>
 			</p>
@@ -156,8 +174,8 @@
 				<li class="active"><a href="#workspace_notes" data-toggle="tab">My
 						Notes</a></li>
 				<li><a href="#workspace_chat" data-toggle="tab">Chat</a></li>
-				<li><a href="#workspace_myprofile" data-toggle="tab">My
-						Profile</a></li>
+				<li><a href="#workspace_myprofile" onclick="updateProfile();"
+					data-toggle="tab">My Profile</a></li>
 			</ul>
 
 			<div class="tab-content">
@@ -197,8 +215,7 @@
 
 						<br /> <a class="btn btn btn-success" href="#"
 							onclick="saveNote();">Save</a> <a class="btn btn-default"
-							href="#" onclick="closeNote();">Close</a> <br />
-						<br />
+							href="#" onclick="closeNote();">Close</a> <br /> <br />
 					</div>
 
 
@@ -210,8 +227,42 @@
 
 
 				<!-- Profile Section -->
-				<div class="tab-pane" id="workspace_myprofile">not yet
-					implemented</div>
+				<div class="tab-pane" id="workspace_myprofile">
+
+
+					<br /> <br />
+
+
+					<div class="form-group">
+						<label for="email_id">ID:</label> <input type="email"
+							class="form-control" id="email_id" placeholder="Enter email">
+					</div>
+					<div class="form-group">
+						<label for="publickey_id">Public Key:</label>
+
+						<textarea class="form-control" id="publickey_id" rows="4"
+							disabled="disabled"></textarea>
+
+					</div>
+
+
+					<table class="public_server_table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Server</th>
+								<th>Default</th>
+							</tr>
+						</thead>
+						<tbody>
+
+						</tbody>
+					</table>
+
+					<button type="submit" class="btn btn-default">Submit</button>
+
+
+				</div>
 			</div>
 
 

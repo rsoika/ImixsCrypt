@@ -22,7 +22,7 @@
  */
 
 var pageSections = [ 'welcome_id', 'start_id', 'login_id', 'workspace_id' ];
-
+var publicKey=null;
 /*
  * Toggle the current page section
  */
@@ -52,6 +52,7 @@ function initImixsCrypt() {
 			// key is not available so show start screen
 			togglePage('welcome_id');
 		} else {
+			publicKey=data;
 			// public key is availalbe so start login
 			togglePage('login_id');
 		}
@@ -135,6 +136,15 @@ function login() {
 
 }
 
+/**
+ * Updates the worspace profile section
+ */
+function updateProfile() {
+	
+	alert(publicKey.key);
+	$("#workspace_myprofile #publickey_id").val(publicKey.key);
+	
+}
 /**
  * Opens the note editor to edit the note. If not name is given a new note is
  * created. If a name is given a ajax request is started to load the text.
