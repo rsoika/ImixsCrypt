@@ -1,66 +1,30 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.imixs.security</groupId>
-    <artifactId>imixs-crypt</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <artifactId>imixs-crypt-public</artifactId>
-  <packaging>war</packaging>
-  
-  
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.imixs.security</groupId>
+		<artifactId>imixs-crypt</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<artifactId>imixs-crypt-public</artifactId>
+	<packaging>war</packaging>
+
+
 	<properties>
 		<jersey.version>1.17.1</jersey.version>
 	</properties>
 
 	<dependencies>
 
-		<!-- jersey support -->
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-grizzly2</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-json</artifactId>
-			<version>${jersey.version}</version>
-		</dependency>
-		
-
-		<!-- Direct Dependency for grizzly 2.3.6 support -->
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-framework</artifactId>
-			<version>2.3.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http</artifactId>
-			<version>2.3.6</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http-server</artifactId>
-			<version>2.3.6</version>
-		</dependency>
-		
-		
 		<!-- Imixs Security Core API -->
 		<dependency>
 			<groupId>org.imixs.security</groupId>
 			<artifactId>imixs-crypt-core</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>org.imixs.security</groupId>
-			<artifactId>imixs-crypt-privacy</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		
-		
+
+
+
 		<!-- JUnit Tests -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -68,6 +32,17 @@
 			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
+
+
+
+		<!-- JEE Dependencies -->
+		<dependency>
+			<groupId>javax</groupId>
+			<artifactId>javaee-api</artifactId>
+			<version>6.0</version>
+			<scope>provided</scope>
+		</dependency>
+
 
 	</dependencies>
 </project>

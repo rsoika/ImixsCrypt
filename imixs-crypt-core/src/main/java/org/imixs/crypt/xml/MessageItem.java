@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Represents a single message item.
  * 
- * @author rsoika 
+ * @author rsoika
  * 
  */
 @XmlRootElement(name = "messageItem")
@@ -47,11 +47,15 @@ public class MessageItem implements java.io.Serializable {
 		return user;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	/**
+	 * usernames are lower cased automatically!
+	 * @param auser
+	 */
+	public void setUser(String auser) {
+		if (auser != null)
+			auser = auser.trim().toLowerCase();
+		this.user = auser;
 	}
-
-	
 
 	public String getMessage() {
 		return message;
