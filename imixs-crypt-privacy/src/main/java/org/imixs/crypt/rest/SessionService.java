@@ -32,37 +32,43 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.Base64Coder;
+import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.xml.KeyItem;
 
 /**
- * Provides a service to open and close a crypt session. 
- * Setting the private key password creates a new sessionId. The sessionId 
- * is stored in the cookie ImixsCryptSessionID. 
+ * Provides a service to open and close a crypt session. Setting the private key
+ * password creates a new sessionId. The sessionId is stored in the cookie
+ * ImixsCryptSessionID.
  * 
  * @author rsoika
  * 
  */
 @Path("/rest")
 public class SessionService {
-	
-	public final static String SESSION_COOKIE="ImixsCryptSessionID";
+
+	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
 
 	private final static Logger logger = Logger.getLogger(SessionService.class
 			.getName());
 
 	/**
-	 * This method post a password and stores it into the local vm's
-	 * CryptSession instance. The password will be stored in the local instance
-	 * of the CryptSession and a sessionId will be returnd.
+	 * This method opens a new session. The POST method expects the ID and a
+	 * password for the corresponding local private key.
 	 * 
-	 * The Method verifies if a local key pair exists. If not the method will
-	 * generate a new key pair, encrypted with the given password.
+	 * The password and ID will be stored in the local instance of the
+	 * CryptSession. A sessionId will be returned to be used for further method
+	 * calls.
+	 * 
+	 * The Method verifies if a local key pair for the given Id exists. If not
+	 * the method will generate a new key pair, encrypted with the given
+	 * password.
 	 * 
 	 * Finally the method creates the ImixsCryptSession Cookie with the current
 	 * sessionId.
@@ -71,38 +77,54 @@ public class SessionService {
 	 *            - password to be set
 	 */
 	@POST
-	@Path("/session")
+	@Path("/session/{id}")
 	@Consumes("text/plain")
-	public Response setPrivateKeyPassword(String password) {
-		CryptSession.getInstance().setPassword(password);
-		if (password != null && !password.isEmpty()) {
-			// verify if a key pair exists
-			PublicKey publicKey = CryptSession.getInstance()
-					.getLocalPublicKey();
-			if (publicKey == null) {
-				logger.info("[SessionService] generate new KeyPair...");
-				try {
-					CryptSession.getInstance().generateKeyPair();
-				} catch (Exception e) {
-					e.printStackTrace();
-					return Response
-							.status(Response.Status.INTERNAL_SERVER_ERROR)
-							.type(MediaType.TEXT_PLAIN)
-							.cookie(new NewCookie(SESSION_COOKIE, ""))
-							.build();
+	public Response createSession(String password, @PathParam("id") String id) {
+
+		// test if id and password a provided
+		if (password == null || password.isEmpty()) {
+			CryptSession.getInstance().closeSession();
+			logger.info("Session closed");
+		} else {
+			// open new Session
+
+			try {
+				CryptSession.getInstance().openSession(id, password);
+
+				if (password != null && !password.isEmpty()) {
+					// verify if a key pair exists
+					PublicKey publicKey = CryptSession.getInstance()
+							.getLocalPublicKey();
+					if (publicKey == null) {
+						logger.info("[SessionService] generate new KeyPair...");
+						try {
+							CryptSession.getInstance().generateKeyPair();
+						} catch (Exception e) {
+							e.printStackTrace();
+							return Response
+									.status(Response.Status.INTERNAL_SERVER_ERROR)
+									.type(MediaType.TEXT_PLAIN)
+									.cookie(new NewCookie(SESSION_COOKIE, ""))
+									.build();
+						}
+					} else {
+						logger.info("Session opened");
+					}
 				}
-			} else {
-				logger.info("Session opened");
+			} catch (ImixsCryptException e1) {
+				e1.printStackTrace();
+				return Response
+						.status(Response.Status.INTERNAL_SERVER_ERROR)
+						.type(MediaType.TEXT_PLAIN)
+						.cookie(new NewCookie(SESSION_COOKIE, ""))
+						.build();
 			}
 
-		} else {
-			logger.info("Session closed");
 		}
 
 		// update cookie
 		String newSessionId = CryptSession.getInstance().getSessionId();
-		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE,
-				newSessionId);
+		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId);
 
 		// success HTTP 200
 		return Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
@@ -115,6 +137,9 @@ public class SessionService {
 	 * Returns the public key. If not yet created the method returns an empty
 	 * key. The method can be used to test if the PrivateCrypt Server is
 	 * initalized with a valid key pair.
+	 * 
+	 * If the name param is empyt then the method returns the default public
+	 * key. The default identity is stored in the properties file.
 	 * 
 	 * @return
 	 */
@@ -145,7 +170,7 @@ public class SessionService {
 
 		// Return the key
 		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
-		key.setUser("");
+		key.setUser(CryptSession.getInstance().getIdentity());
 
 		return Response.status(Response.Status.OK).entity(key)
 				.type(MediaType.APPLICATION_JSON).build();

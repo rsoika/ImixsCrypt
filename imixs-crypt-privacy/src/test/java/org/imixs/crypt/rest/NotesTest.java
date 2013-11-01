@@ -20,6 +20,7 @@ import org.junit.Test;
 public class NotesTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
+	String IDENTITY="id";
 	String sessionId=null;
 	CookieManager cookieManager =null;
 	/**
@@ -28,7 +29,7 @@ public class NotesTest {
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = HOST + "/rest/session";
+		String uri = HOST + "/rest/session/"+IDENTITY;
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);

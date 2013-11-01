@@ -25,7 +25,8 @@ import org.junit.Test;
 public class MessageTest {
 	String HOST = "http://127.0.0.1:4040";
 	String PASSWORD = "abc";
-	CookieManager cookieManager =null;
+	String IDENTITY = "id";
+	CookieManager cookieManager = null;
 
 	/**
 	 * Open Session
@@ -33,14 +34,14 @@ public class MessageTest {
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = HOST + "/rest/session";
+		String uri = HOST + "/rest/session/" + IDENTITY;
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
-			
+
 			// store the session cookie
 			cookieManager = restClient.getCookies();
-			
+
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 		} catch (Exception e) {
@@ -96,7 +97,7 @@ public class MessageTest {
 
 			// decrypt
 			uri = HOST + "/rest/message/decrypt/";
-			
+
 			restClient.setCookies(cookieManager);
 			httpResult = restClient.post(uri, sContent);
 

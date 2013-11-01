@@ -20,6 +20,7 @@ import org.junit.Test;
 public class SessionTest { 
 	String PASSWORD = "abc";
 	String HOST = "http://127.0.0.1:4040";
+	String IDENTITY="id";
 	
 	/**
 	 * generate key pair
@@ -28,9 +29,9 @@ public class SessionTest {
 	public void setup() {
 
 		try {
-			File keyFile = new File("src/test/resources/id");
+			File keyFile = new File("src/test/resources/keys/"+IDENTITY);
 			if (!keyFile.exists()) {
-				CryptSession.getInstance().setPassword(PASSWORD);
+				CryptSession.getInstance().openSession(IDENTITY,PASSWORD);
 				CryptSession.getInstance().generateKeyPair();
 			}
 		} catch (Exception e) {
@@ -56,22 +57,22 @@ public class SessionTest {
 		RestClient restClient = new RestClient();
  
 		// first check to delete a key pair.
-		File keyFile = new File("src/test/resources/keys/id");
+		File keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		if (keyFile.exists())
 			keyFile.delete();
 
-		keyFile = new File("src/test/resources/keys/id.pub");
+		keyFile = new File("src/test/resources/keys/"+ IDENTITY +".pub");
 		if (keyFile.exists())
 			keyFile.delete();
 
-		keyFile = new File("src/test/resources/keys/id");
+		keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		Assert.assertFalse(keyFile.exists());
 
-		keyFile = new File("src/test/resources/keys/id.pub");
+		keyFile = new File("src/test/resources/keys/"+IDENTITY+".pub");
 		Assert.assertFalse(keyFile.exists());
 
 		// generate new key by opening a session with a password
-		String uri = HOST + "/rest/session";
+		String uri = HOST + "/rest/session/"+IDENTITY;
 		String value = "some-password";
 		try { 
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
@@ -85,10 +86,10 @@ public class SessionTest {
 
 		// now new key files should exist
 
-		keyFile = new File("src/test/resources/keys/id");
+		keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		Assert.assertTrue(keyFile.exists());
 
-		keyFile = new File("src/test/resources/keys/id.pub");
+		keyFile = new File("src/test/resources/keys/"+IDENTITY+".pub");
 		Assert.assertTrue(keyFile.exists());
 
 	}
