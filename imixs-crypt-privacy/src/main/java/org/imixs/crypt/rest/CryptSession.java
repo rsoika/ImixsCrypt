@@ -410,7 +410,7 @@ class CryptSession {
 					"Invalid SessionID: " + asessionId);
 		}
 		try {
-			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/id",
+			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"+getIdentity(),
 					password);
 
 			return keyUtil.decrypt(encryptedData, privateKey);

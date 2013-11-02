@@ -78,7 +78,7 @@ public class NotesService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putNote(String message, @PathParam("name") String name,
-			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
 
 		// validate key
 		if (message == null) {
@@ -127,7 +127,7 @@ public class NotesService {
 	@Path("/decrypt/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getNote(@PathParam("name") String name,
-			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
 		String text = null;
 		// validate key
 		if (name == null || name.isEmpty()) {
@@ -168,7 +168,7 @@ public class NotesService {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Note> getNotes(
-			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
 
 		if (!CryptSession.getInstance().isValidSession(sessionId))
 			return null;
@@ -198,7 +198,7 @@ public class NotesService {
 	@DELETE
 	@Path("/{name}")
 	public Response deleteNote(@PathParam("name") String name,
-			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
 
 		// validate key
 		if (name == null || name.isEmpty()) {

@@ -101,7 +101,7 @@ function createKey() {
 		dataType : "text",
 		processData : false,
 		contentType : 'text/plain',
-		url : "http://localhost:4040/rest/session/" + email,
+		url : "/rest/session/" + email,
 		data : password1,
 		success : function(resultData) {
 			//publicKey = resultData;
@@ -132,7 +132,7 @@ function login() {
 		dataType : "text",
 		processData : false,
 		contentType : 'text/plain',
-		url : "http://localhost:4040/rest/session/"+publicKey.user,
+		url : "/rest/session/"+publicKey.user,
 		data : password,
 		success : function(resultData) {
 

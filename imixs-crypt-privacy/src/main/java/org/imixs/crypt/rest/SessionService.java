@@ -81,7 +81,7 @@ public class SessionService {
 	@Consumes("text/plain")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(String password, @PathParam("id") String id) {
-		PublicKey publicKey=null;
+		PublicKey publicKey = null;
 		// test if id and password a provided
 		if (password == null || password.isEmpty()) {
 			CryptSession.getInstance().closeSession();
@@ -94,12 +94,12 @@ public class SessionService {
 
 				if (password != null && !password.isEmpty()) {
 					// verify if a key pair exists
-					publicKey = CryptSession.getInstance()
-							.getLocalPublicKey();
+					publicKey = CryptSession.getInstance().getLocalPublicKey();
 					if (publicKey == null) {
 						logger.info("[SessionService] generate new KeyPair...");
 						try {
-							publicKey=CryptSession.getInstance().generateKeyPair();
+							publicKey = CryptSession.getInstance()
+									.generateKeyPair();
 						} catch (Exception e) {
 							e.printStackTrace();
 							return Response
@@ -114,38 +114,41 @@ public class SessionService {
 				}
 			} catch (ImixsCryptException e1) {
 				e1.printStackTrace();
-				return Response
-						.status(Response.Status.INTERNAL_SERVER_ERROR)
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 						.type(MediaType.TEXT_PLAIN)
-						.cookie(new NewCookie(SESSION_COOKIE, ""))
-						.build();
+						.cookie(new NewCookie(SESSION_COOKIE, "")).build();
 			}
 
 		}
 
 		// update cookie
+		String path = "/rest/";
+		String domain = "";
+
 		String newSessionId = CryptSession.getInstance().getSessionId();
-		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId);
-		
-		
+		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId,
+				 path, domain,"", -1, false);
+
 		KeyItem key = new KeyItem();
 		key.setUser(id);
 		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
 
 		// success HTTP 200
 		return Response.status(Response.Status.OK).entity(key)
-				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie).entity(key).build();
-		
-		//return Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
+				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie)
+				.entity(key).build();
+
+		// return
+		// Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
 
 		// return Response.ok(MediaType.TEXT_PLAIN).build();
 
 	}
 
 	/**
-	 * Returns the default local public key. If not yet created the method returns an empty
-	 * keyItem. The method can be used to test if the PrivateCrypt Server is
-	 * initalized with a valid key pair.
+	 * Returns the default local public key. If not yet created the method
+	 * returns an empty keyItem. The method can be used to test if the
+	 * PrivateCrypt Server is initalized with a valid key pair.
 	 * 
 	 * @return
 	 */
