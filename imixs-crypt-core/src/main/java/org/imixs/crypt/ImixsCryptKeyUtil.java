@@ -36,7 +36,7 @@ import java.security.PublicKey;
  */
 public interface ImixsCryptKeyUtil {
 
-	public void generateKeyPair(String privateKeyFileName,
+	public PublicKey generateKeyPair(String privateKeyFileName,
 			String publicKeyFileName, String password) throws ImixsCryptException;
 
 	public PublicKey getPublicKey(String filename) throws ImixsCryptException;

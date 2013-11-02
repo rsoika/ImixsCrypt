@@ -79,8 +79,9 @@ public class SessionService {
 	@POST
 	@Path("/session/{id}")
 	@Consumes("text/plain")
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(String password, @PathParam("id") String id) {
-
+		PublicKey publicKey=null;
 		// test if id and password a provided
 		if (password == null || password.isEmpty()) {
 			CryptSession.getInstance().closeSession();
@@ -93,12 +94,12 @@ public class SessionService {
 
 				if (password != null && !password.isEmpty()) {
 					// verify if a key pair exists
-					PublicKey publicKey = CryptSession.getInstance()
+					publicKey = CryptSession.getInstance()
 							.getLocalPublicKey();
 					if (publicKey == null) {
 						logger.info("[SessionService] generate new KeyPair...");
 						try {
-							CryptSession.getInstance().generateKeyPair();
+							publicKey=CryptSession.getInstance().generateKeyPair();
 						} catch (Exception e) {
 							e.printStackTrace();
 							return Response
@@ -125,21 +126,26 @@ public class SessionService {
 		// update cookie
 		String newSessionId = CryptSession.getInstance().getSessionId();
 		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId);
+		
+		
+		KeyItem key = new KeyItem();
+		key.setUser(id);
+		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
 
 		// success HTTP 200
-		return Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
+		return Response.status(Response.Status.OK).entity(key)
+				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie).entity(key).build();
+		
+		//return Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
 
 		// return Response.ok(MediaType.TEXT_PLAIN).build();
 
 	}
 
 	/**
-	 * Returns the public key. If not yet created the method returns an empty
-	 * key. The method can be used to test if the PrivateCrypt Server is
+	 * Returns the default local public key. If not yet created the method returns an empty
+	 * keyItem. The method can be used to test if the PrivateCrypt Server is
 	 * initalized with a valid key pair.
-	 * 
-	 * If the name param is empyt then the method returns the default public
-	 * key. The default identity is stored in the properties file.
 	 * 
 	 * @return
 	 */

@@ -60,17 +60,17 @@ class CryptSession {
 	public static String PROPERTY_KEY_UTIL = "keyutil";
 	public static String PROPERTY_DEFAULT_IDENTITY = "default.identity";
 
-	private String rootPath = null;
+	private static String rootPath = null;
 	private String password = null;
 	private String sessionId = null;
 	private String identity = null;
 
 	private static String DEFAULT_ROOT_PATH = "src/test/resources/";
 	private static String DEFAULT_KEY_UTIL = "org.imixs.crypt.ImixsRSAKeyUtil";
-	private Properties properties;
+	private static Properties properties;
 
 	private static CryptSession instance = null;
-	private ImixsCryptKeyUtil keyUtil = null;
+	private static ImixsCryptKeyUtil keyUtil = null;
 
 	private final static Logger logger = Logger.getLogger(CryptSession.class
 			.getName());
@@ -79,32 +79,29 @@ class CryptSession {
 	 * Default Constructor
 	 */
 	protected CryptSession() {
-		init();
+		super();
 	}
 
-	/**
-	 * Constructor with a default rootPath setting
-	 * 
-	 * @param rootPath
-	 *            for data storage
-	 */
-	protected CryptSession(String rootPath) {
-		this();
-		setRootPath(rootPath);
+	protected static CryptSession getInstance() {
+		if (instance == null) {
+			instance = new CryptSession();
+			init();
+		}
+		return instance;
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void init() {
+	protected static void init() {
 		// read properties
 		try {
+			properties = new Properties();
+			logger.fine("[CryptSession] read imixs.properties from:"
+					+ getRootPath() + IMIXS_PROPERTY_FILE);
+
 			properties.load(new FileInputStream(getRootPath()
 					+ IMIXS_PROPERTY_FILE));
-			if (properties == null) {
-				logger.warning("[CryptSession] No imixs.properties file found!");
-				createDefaultProperties();
-			}
-
 		} catch (Exception e) {
+			logger.warning("[CryptSession] No imixs.properties file found!");
 			createDefaultProperties();
 		}
 
@@ -127,16 +124,9 @@ class CryptSession {
 		}
 
 		// create key and data directories
-		new File(this.getRootPath() + "keys").mkdirs();
-		new File(this.getRootPath() + "data/notes").mkdirs();
+		new File(getRootPath() + "keys").mkdirs();
+		new File(getRootPath() + "data/notes").mkdirs();
 
-	}
-
-	protected static CryptSession getInstance() {
-		if (instance == null) {
-			instance = new CryptSession();
-		}
-		return instance;
 	}
 
 	/**
@@ -144,7 +134,7 @@ class CryptSession {
 	 * 
 	 * @return
 	 */
-	protected String getRootPath() {
+	protected static String getRootPath() {
 		if (rootPath == null)
 			rootPath = DEFAULT_ROOT_PATH;
 		return rootPath;
@@ -155,8 +145,8 @@ class CryptSession {
 	 * 
 	 * @param rootPath
 	 */
-	protected void setRootPath(String rootPath) {
-		this.rootPath = rootPath;
+	protected static void setRootPath(String arootPath) {
+		rootPath = arootPath;
 	}
 
 	/**
@@ -245,20 +235,23 @@ class CryptSession {
 	 * 
 	 * @throws Exception
 	 */
-	protected void generateKeyPair() throws Exception {
+	protected PublicKey generateKeyPair() throws Exception {
 		if (getSessionId() == null) {
 			logger.warning("[CryptSession] invalid sessionId!");
-			return;
+			return null;
 		}
 
 		logger.info("[CryptSession] generate new keypair....");
 
-		keyUtil.generateKeyPair(getRootPath() + "keys/" + getIdentity(),
-				getRootPath() + "keys/" + getIdentity() + ".pub", password);
+		PublicKey publicKey = keyUtil.generateKeyPair(getRootPath() + "keys/"
+				+ getIdentity(), getRootPath() + "keys/" + getIdentity()
+				+ ".pub", password);
 
 		// update default identity
 		properties.setProperty(PROPERTY_DEFAULT_IDENTITY, getIdentity());
 		saveProperties();
+
+		return publicKey;
 	}
 
 	/**
@@ -320,9 +313,15 @@ class CryptSession {
 		try {
 			PublicKey publicKey = null;
 
+			String id = getIdentity();
+			if (id == null) {
+				// get default identity
+				id = properties.getProperty(PROPERTY_DEFAULT_IDENTITY);
+				setIdentity(id);
+			}
 			// try loading from key path
-			publicKey = keyUtil.getPublicKey(getRootPath() + "keys/"
-					+ getIdentity() + ".pub");
+			publicKey = keyUtil.getPublicKey(getRootPath() + "keys/" + id
+					+ ".pub");
 
 			return publicKey;
 		} catch (ImixsCryptException e) {
@@ -426,7 +425,7 @@ class CryptSession {
 	/**
 	 * creates a default property file
 	 */
-	private void createDefaultProperties() {
+	private static void createDefaultProperties() {
 
 		// init properties
 		properties = new Properties();
@@ -438,7 +437,7 @@ class CryptSession {
 
 	}
 
-	private void saveProperties() {
+	private static void saveProperties() {
 		// save properties to project root folder
 		try {
 			properties.store(new FileOutputStream(getRootPath()

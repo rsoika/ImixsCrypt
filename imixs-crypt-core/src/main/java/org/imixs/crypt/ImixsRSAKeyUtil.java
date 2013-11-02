@@ -95,7 +95,7 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 	 *            optional password to encrypt the private key
 	 * @throws Exception
 	 */
-	public void generateKeyPair(String privateKeyFileName,
+	public PublicKey generateKeyPair(String privateKeyFileName,
 			String publicKeyFileName, String password)
 			throws ImixsCryptException {
 		KeyPairGenerator keyGen;
@@ -108,6 +108,7 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 			writeKeyToFile(key.getPublic(), publicKeyFileName, null);
 
 			writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
+			return key.getPublic();
 		} catch (NoSuchAlgorithmException e) {
 			throw new ImixsCryptException(
 					ImixsCryptException.NO_SUCH_ALGORITHM, e);
