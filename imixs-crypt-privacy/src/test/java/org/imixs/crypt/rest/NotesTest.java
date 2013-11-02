@@ -58,7 +58,7 @@ public class NotesTest {
 
 		String notesName = "test";
 
-		String uri = HOST + "/rest/notes/encrypt/" + notesName;
+		String uri = HOST + "/rest/notes/" + notesName;
 		// create a json test string
 		String message = "Hallo Welt";
 
@@ -73,7 +73,7 @@ public class NotesTest {
 
 			// decrypt again....
 
-			uri = HOST + "/rest/notes/decrypt/" + notesName;
+			uri = HOST + "/rest/notes/" + notesName;
 			String result = null;
 			
 			// set session cookie

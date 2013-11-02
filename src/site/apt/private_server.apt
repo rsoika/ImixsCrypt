@@ -1,4 +1,4 @@
-ImixsCrypt-Private-Server 
+ImixsCrypt Private Server 
 ~~~~~~~~~~~~~~
 
  The ImixsCrypt-Private-Server is a web server running on your local machine. 
@@ -17,7 +17,7 @@ ImixsCrypt-Private-Server
  
 *The Key-Management
 ~~~~~~~~~~~~~~ 
- All keys which are used by the imixs-crypt-private-server are stored in the local server 
+ All keys managed by the ImixsCrypt Private Server are stored in the local server 
  directory /keys/. This directory contains your local private RSA key pair as also
  public keys from other users. 
  
@@ -40,7 +40,7 @@ ImixsCrypt-Private-Server
  
  To be sure to have a secure communication with other users you should copy a 
  trusted version of the public key into the /keys/trusted/ directory. 
- For example if you reciefe a local copy of the public key or your got the public 
+ For example if you reciefe a local copy of the public key or you got the public 
  key through a secure pgp encrypted email. 
  
  
@@ -49,26 +49,34 @@ ImixsCrypt-Private-Server
 ~~~~~~~~~~~~~~
  The ImixsCrypt-Private-Server provides a local REST API to manage the use of RSA private 
  and public keys. 
- Because your local private RSA key is password protected a client need to
- start a session to work with the private key. After a session is created the 
- REST API can be used by client to encrypt and decrypt data with the RSA Key.  
- The password for the local key pair used during a session is only stored in-memory.
- If the session is closed the private key is dropped. 
+ To work with a local private RSA key which is password protected a client need to first
+ start a new session. After a session was created the client can encrypt or decrypt messages 
+ using a sessionId stored in a browser cookie.
+ To open a new session for a specifiy identity a client can post the private key password. 
+ The local server verifies the password and generates the sessionId. 
+ The password and the sessionId used during a session are only stored in-memory.
+ To close a session a client can post an empty password.  
   
-*---------------------*----------*---------------------------------------* 
-|| Resource URI       || Method  || Description                         ||
-*---------------------+----------+---------------------------------------+
-| /session            |GET       |Returns the local public key if        |
-|                     |          |available.                             |
-|                     |          |HTTP-202=no key found, HTTP-200=key found  |
-*---------------------+----------+---------------------------------------+
-| /session            |POST      |Posting the private keys password opens|
+*---------------------*----------*------------------------------------------* 
+|| Resource URI       || Method  || Description                            ||
+*---------------------+----------+------------------------------------------+
+| /session/identity   |GET       |Returns the local public key for the given|
+|                     |          |identity if available.                    |
+|                     |          |HTTP-202=no key found, HTTP-200=key found	|
+|                     |          |If no identity is provided the current 	|
+|                     |          |default identity is used.   				|
+*---------------------+----------+------------------------------------------+
+| /session/           |POST      |Posting the private keys password opens	|
 |                     |          | a session, posting an empty key closes the session.  |
 |                     |          |If no key-pair still exits and a password was provided |
 |                     |          | then a new local key pair  will be generated.      |
 *---------------------+----------+---------------------------------------+
  
+ Both methods return a KeyItem in JSON format.
  
++----+ 	
+"{"user":"test.user@imixs.org","key":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCV2k6a+9Gvv5zkc9PrwcRtMsXf6ocqasdf14GnaYl3y9+6V7/csCd098f5kEdCowo\nNAOACpvQQ68KF85iFz79EiA0PWLHA1dfKtj9U7spORv3TjHJkoSjhm+D6wIDAQAB\n"}"
++----+ 
  
    
  

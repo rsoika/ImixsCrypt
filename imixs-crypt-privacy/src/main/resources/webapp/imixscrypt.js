@@ -175,7 +175,7 @@ function editNote(name) {
 			dataType : "text",
 			processData : false,
 			contentType : 'application/json',
-			url : "/rest/notes/decrypt/" + name,
+			url : "/rest/notes/" + name,
 			success : function(data) {
 				console.log("success");
 				// alert(data);
@@ -263,7 +263,7 @@ function saveNote() {
 			processData : false,
 			contentType : 'application/json',
 			data : content,
-			url : "/rest/notes/encrypt/" + name,
+			url : "/rest/notes/" + name,
 			success : function() {
 				console.log("success");
 				// alert('Encrypted!');

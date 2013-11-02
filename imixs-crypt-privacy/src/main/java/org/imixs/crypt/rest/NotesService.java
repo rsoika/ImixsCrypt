@@ -45,7 +45,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.imixs.crypt.xml.Note;
+import org.imixs.crypt.xml.NoteItem;
 
 /**
  * The Notes Service ecnrypts and decrypt local data with the local key pair
@@ -74,7 +74,7 @@ public class NotesService {
 	 * 
 	 */
 	@POST
-	@Path("/encrypt/{name}")
+	@Path("/{name}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putNote(String message, @PathParam("name") String name,
@@ -124,7 +124,7 @@ public class NotesService {
 	 * 
 	 */
 	@GET
-	@Path("/decrypt/{name}")
+	@Path("/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getNote(@PathParam("name") String name,
 			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
@@ -167,7 +167,7 @@ public class NotesService {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<Note> getNotes(
+	public List<NoteItem> getNotes(
 			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
 
 		if (!CryptSession.getInstance().isValidSession(sessionId))
@@ -177,12 +177,12 @@ public class NotesService {
 				+ "data/notes");
 		File[] listOfFiles = folder.listFiles();
 
-		List<Note> result = new ArrayList<>();
+		List<NoteItem> result = new ArrayList<>();
 		for (File file : listOfFiles) {
 			Long lastModified = file.lastModified();
 			String name = file.getName();
 
-			Note note = new Note();
+			NoteItem note = new NoteItem();
 			note.setModified(new Date(lastModified));
 			note.setName(name);
 			result.add(note);

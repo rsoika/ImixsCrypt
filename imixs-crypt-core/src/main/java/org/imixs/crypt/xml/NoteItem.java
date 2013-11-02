@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * 
  */
 @XmlRootElement(name = "notesItem")
-public class Note implements java.io.Serializable {
+public class NoteItem implements java.io.Serializable {
 	/**
 	 * 
 	 */

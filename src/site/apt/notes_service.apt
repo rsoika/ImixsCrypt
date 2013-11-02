@@ -1,0 +1,38 @@
+The NotesService 
+~~~~~~~~~~~~~~
+
+ The NotesServiceis a Rest API of the ImixsCrypt-Private-Server to encrypt and
+ decrypt notes. A note is a text stored in in a ecnrypted file inot the /data/notes 
+ directory.
+ 
+*The REST API
+~~~~~~~~~~~~~~
+ The NotesService provide the following methods:
+  
+*---------------------*----------*------------------------------------------* 
+|| Resource URI       || Method  || Description                            ||
+*---------------------+----------+------------------------------------------+
+| /notes/             |GET       |Returns a list NoteItems. 				|
+|                     |          |											|
+|                     |          |											|
+|                     |          |											|
+|                     |          |											|
+*---------------------+----------+------------------------------------------+
+| /notes/(name) 	  |POST 	 |encrypt the text and stores the encrypted 	|
+|                     |          |text into a file with the specified filename.  |
+*---------------------+----------+---------------------------------------+
+| /notes/(name) 	  |GET  	 |decrypt a file with the specified filename.  |
+|                     |          |and returns the decrypted text  |
+*---------------------+----------+---------------------------------------+
+| /notes/(name)       |DELETE    |delets an ecrypted file with the specified filename.  |
+|                     |          |										 |
+*---------------------+----------+---------------------------------------+
+ 
+ A NoteItem contains a name and the encryption date.
+ 
++----+ 	
+"{"name":"readme","date":"2435245"}"
++----+ 
+ 
+   
+ 

@@ -18,8 +18,13 @@
 
 		<menu name="Home" href="index.html">
 			<item name="Chryptography" href="chryptography.html" />
-			<item name="Private Server" href="private_server.html" />
-			<item name="Public Server" href="public_server.html" />
+			<item name="Private Server" href="private_server.html">
+				<item name="Notes Service" href="notes_service.html" />
+			</item>
+			<item name="Public Server" href="public_server.html">
+
+
+			</item>
 		</menu>
 
 
