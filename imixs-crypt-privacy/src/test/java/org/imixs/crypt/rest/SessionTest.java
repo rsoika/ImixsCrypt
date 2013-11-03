@@ -102,6 +102,7 @@ public class SessionTest {
 
 		RestClient restClient = new RestClient();
 
+		// test default identity
 		String uri = HOST + "/rest/session/";
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
@@ -150,4 +151,31 @@ public class SessionTest {
 
 	}
 
+
+	/**
+	 * Test GET the local public key
+	 */
+	@Test
+	public void testGetKey() {
+
+		RestClient restClient = new RestClient();
+
+		// test default identity
+		String uri = HOST + "/rest/session/"+IDENTITY;
+		try {
+			restClient.setMediaType(MediaType.TEXT_PLAIN);
+			int httpResult = restClient.get(uri);
+
+			String sContent = restClient.getContent();
+
+			Assert.assertEquals(200, httpResult);
+
+			Assert.assertTrue(sContent.length() > 64);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+	}
 }

@@ -29,6 +29,7 @@ import java.security.PublicKey;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -94,7 +95,8 @@ public class SessionService {
 
 				if (password != null && !password.isEmpty()) {
 					// verify if a key pair exists
-					publicKey = CryptSession.getInstance().getLocalPublicKey();
+					publicKey = CryptSession.getInstance()
+							.getLocalPublicKey(id);
 					if (publicKey == null) {
 						logger.info("[SessionService] generate new KeyPair...");
 						try {
@@ -127,7 +129,7 @@ public class SessionService {
 
 		String newSessionId = CryptSession.getInstance().getSessionId();
 		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId,
-				 path, domain,"", -1, false);
+				path, domain, "", -1, false);
 
 		KeyItem key = new KeyItem();
 		key.setUser(id);
@@ -146,21 +148,19 @@ public class SessionService {
 	}
 
 	/**
-	 * Returns the default local public key. If not yet created the method
-	 * returns an empty keyItem. The method can be used to test if the
-	 * PrivateCrypt Server is initalized with a valid key pair.
+	 * Returns the local public key for a given identity.
 	 * 
 	 * @return
 	 */
 	@GET
-	@Path("/session")
+	@Path("/session/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPublicKey() {
+	public Response getPublicKey(@PathParam("id") String id) {
 		PublicKey publicKey = null;
 		KeyItem key = new KeyItem();
 
 		try {
-			publicKey = CryptSession.getInstance().getLocalPublicKey();
+			publicKey = CryptSession.getInstance().getLocalPublicKey(id);
 			if (publicKey == null) {
 				logger.info("KeyPair not yet created");
 
@@ -185,4 +185,73 @@ public class SessionService {
 				.type(MediaType.APPLICATION_JSON).build();
 
 	}
+
+	/**
+	 * Returns the default local public key. The method can be used to test if
+	 * the PrivateCrypt Server is initialized with a valid key pair.
+	 * 
+	 * @return
+	 */
+	@GET
+	@Path("/session/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getDefaultPublicKey() {
+		return getPublicKey(null);
+	}
+
+	/**
+	 * This method sets a value in the local property file. The value is part of
+	 * the body
+	 * 
+	 * @param property
+	 *            - property to be set
+	 */
+	@POST
+	@Path("/session/properties/{property}")
+	@Consumes("text/plain")
+	public Response setProperty(String value,
+			@PathParam("property") String property,
+			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+
+		try {
+			CryptSession.getInstance().setProperty(property, value, sessionId);
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+
+		// success HTTP 200
+		return Response.status(Response.Status.OK).build();
+
+	}
+
+	/**
+	 * This method gets a value of the local property file.
+	 * 
+	 * @param property
+	 *            - property to be read
+	 */
+	@GET
+	@Path("/session/properties/{property}")
+	@Produces("text/plain")
+	public Response getProperty(@PathParam("property") String property,
+			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+		String value = null;
+		try {
+			value = CryptSession.getInstance().getProperty(property, sessionId);
+		} catch (Exception e) {
+
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(null).build();
+
+		}
+		// success HTTP 200
+		return Response.status(Response.Status.OK).entity(value).build();
+
+	}
+
 }

@@ -297,25 +297,28 @@ class CryptSession {
 	}
 
 	/**
-	 * returns a local public key for the local cryptServer. The local public
-	 * keys are stored under
+	 * returns a local public key for a spcified idenity. The local public keys
+	 * are stored under
 	 * 
 	 * /keys/
 	 * 
-	 * If the param name is empty then the method lookups the default identity
-	 * in the prpeerties file.
+	 * If the param id is empty then the method lookups the default identity in
+	 * the properties file.
 	 * 
 	 * 
-	 * The method retuns null if no key exists
+	 * The method returns null if no key exists.
 	 * 
 	 */
-	protected PublicKey getLocalPublicKey() {
+	protected PublicKey getLocalPublicKey(String id) {
 		try {
 			PublicKey publicKey = null;
 
-			String id = getIdentity();
+			if (id == null || id.isEmpty()) {
+				// get current identity if set
+				id = getIdentity();
+			}
 			if (id == null) {
-				// get default identity
+				// get default identity from poroperties file
 				id = properties.getProperty(PROPERTY_DEFAULT_IDENTITY);
 				setIdentity(id);
 			}
@@ -383,7 +386,7 @@ class CryptSession {
 		}
 		try {
 			// get the local public key
-			PublicKey publicKey = this.getLocalPublicKey();
+			PublicKey publicKey = this.getLocalPublicKey(null);
 			return keyUtil.encrypt(data, publicKey);
 		} catch (ImixsCryptException e) {
 			logger.warning("[CryptSession] " + e.getMessage());
@@ -410,8 +413,8 @@ class CryptSession {
 					"Invalid SessionID: " + asessionId);
 		}
 		try {
-			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"+getIdentity(),
-					password);
+			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"
+					+ getIdentity(), password);
 
 			return keyUtil.decrypt(encryptedData, privateKey);
 
@@ -435,6 +438,45 @@ class CryptSession {
 		// save properties to project root folder
 		saveProperties();
 
+	}
+
+	/**
+	 * Set a property value and saves the property file
+	 * 
+	 * @param property
+	 * @param value
+	 * @throws ImixsCryptException
+	 */
+	protected void setProperty(String property, String value, String asessionId)
+			throws ImixsCryptException {
+
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
+					"Invalid SessionID: " + asessionId);
+
+		}
+		properties.setProperty(property, value);
+		saveProperties();
+	}
+
+	/**
+	 * Returns a property value from the property file
+	 * 
+	 * @param property
+	 * @return
+	 * @throws ImixsCryptException
+	 */
+	protected String getProperty(String property, String asessionId)
+			throws ImixsCryptException {
+
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
+					"Invalid SessionID: " + asessionId);
+
+		}
+		return properties.getProperty(property);
 	}
 
 	private static void saveProperties() {

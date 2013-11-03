@@ -60,23 +60,41 @@ ImixsCrypt Private Server
 *---------------------*----------*------------------------------------------* 
 || Resource URI       || Method  || Description                            ||
 *---------------------+----------+------------------------------------------+
-| /session/identity   |GET       |Returns the local public key for the given|
-|                     |          |identity if available.                    |
+| /session/(identity) |GET       |Returns the local public key for a identity|
+|                     |          |If no identity is provided the default identity will be used|
+|                     |          |The default identity is stored in the 	|
+|                     |          |properties and can be set with the POST method|
 |                     |          |HTTP-202=no key found, HTTP-200=key found	|
-|                     |          |If no identity is provided the current 	|
-|                     |          |default identity is used.   				|
 *---------------------+----------+------------------------------------------+
-| /session/           |POST      |Posting the private keys password opens	|
-|                     |          | a session, posting an empty key closes the session.  |
-|                     |          |If no key-pair still exits and a password was provided |
-|                     |          | then a new local key pair  will be generated.      |
+| /session/(identity) |POST      |Posts a private key password and opens a  |
+|                     |          |session for a specific identity.  		|
+|                     |          |posting an empty key closes the session.  |
+|                     |          |If no key-pair still exits and a password |
+|                     |          |was provided then a new local key pair will be generated.      |
 *---------------------+----------+---------------------------------------+
  
- Both methods return a KeyItem in JSON format.
+ Both methods return a KeyItem in JSON format containing the identity and the public key.
  
 +----+ 	
 "{"user":"test.user@imixs.org","key":"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCV2k6a+9Gvv5zkc9PrwcRtMsXf6ocqasdf14GnaYl3y9+6V7/csCd098f5kEdCowo\nNAOACpvQQ68KF85iFz79EiA0PWLHA1dfKtj9U7spORv3TjHJkoSjhm+D6wIDAQAB\n"}"
 +----+ 
- 
+
+ The POST method automatically updates the property "default.identity" with the 
+ identity provided in the request. 
    
+ 
+
+ 
+*Property Management
+~~~~~~~~~~~~~~
+ The Rest API provides a way to read and set properties into the local property file.
+ A valid session must be opened before. 
+  
+*---------------------*----------*------------------------------------------* 
+|| Resource URI       || Method  || Description                            ||
+*---------------------+----------+------------------------------------------+
+| /session/properties/(key) |GET       |Returns the value of a property|
+*---------------------+----------+------------------------------------------+
+| /session/properties/(key) |POST      |Set a new value of a property |
+*---------------------+----------+---------------------------------------+
  
