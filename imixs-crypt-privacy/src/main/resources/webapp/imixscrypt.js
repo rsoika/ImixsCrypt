@@ -104,9 +104,9 @@ function createKey() {
 		url : "/rest/session/" + email,
 		data : password1,
 		success : function(resultData) {
-			//publicKey = resultData;
-			
-			publicKey= jQuery.parseJSON(resultData);
+			// publicKey = resultData;
+
+			publicKey = jQuery.parseJSON(resultData);
 			// key generated and session enabled - switch to workspace
 			togglePage('workspace_id');
 		}
@@ -132,7 +132,7 @@ function login() {
 		dataType : "text",
 		processData : false,
 		contentType : 'text/plain',
-		url : "/rest/session/"+publicKey.user,
+		url : "/rest/session/" + publicKey.user,
 		data : password,
 		success : function(resultData) {
 
@@ -153,11 +153,65 @@ function login() {
  * Updates the worspace profile section
  */
 function updateProfile() {
-	//alert(publicKey.key); 
+	// alert(publicKey.key);
 	$("#workspace_myprofile #publickey_id").val(publicKey.key);
 	$("#workspace_myprofile #email_id").val(publicKey.user);
 
 }
+
+/**
+ * Verifies the current public node and updates the chat section
+ */
+function updateChat() {
+
+	// get public node...
+	var saveData = $.ajax({
+		type : 'GET',
+		dataType : "text",
+		processData : false,
+		contentType : 'text/plain',
+		url : "/rest/session/properties/default.public.node",
+		success : function(resultData) {
+			//alert(resultData);
+			if (resultData==null) {
+				$("#workspace_chat #no_public_node").show();
+				$("#workspace_chat #chat").hide();
+			}
+			else {
+				$("#workspace_chat #no_public_node").hide();
+				$("#workspace_chat #chat").show();
+				//alert(resultData);
+				// insert server address
+				$("#workspace_chat #chat #publicnode_id").append(resultData);
+			}
+		}
+	});
+	saveData.error(function() {
+		alert("Something went wrong");
+	});
+
+}
+
+function savePublicNode(servernode) {
+	// get public node...
+	var saveData = $.ajax({
+		type : 'POST',
+		dataType : "text",
+		processData : false,
+		contentType : 'text/plain',
+		url : "/rest/session/properties/default.public.node",
+		data : servernode,
+		success : function(resultData) {
+
+			$("#workspace_chat #no_public_node").hide();
+
+		}
+	});
+	saveData.error(function() {
+		alert("Something went wrong");
+	});
+}
+
 /**
  * Opens the note editor to edit the note. If not name is given a new note is
  * created. If a name is given a ajax request is started to load the text.
