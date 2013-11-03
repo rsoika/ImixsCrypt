@@ -32,11 +32,18 @@
 		//togglePage('workspace_id');
 
 		// http://www.tinymce.com/wiki.php/TinyMCE3x:jQuery_Plugin
-		$('.tinymce').tinymce({
+		$('#notes_editor .tinymce').tinymce({
 			script_url : './tinymce/js/tinymce/tinymce.min.js',
 			height : 340
 		// Optional parameters
 		});
+
+		$('#message_editor .tinymce').tinymce({
+			script_url : './tinymce/js/tinymce/tinymce.min.js',
+			height : 80
+		// Optional parameters
+		});
+
 	});
 </script>
 </head>
@@ -246,16 +253,17 @@
 						<h4>Public Crypt Server:</h4>
 						<p id="publicnode_id"></p>
 
-						<div class="form-group">
-							<label for="message_id">Message:</label>
+						<div class="form-group" id="message_editor">
+							<label for="message_editor">Message: <input
+								type="text" id="receipient_id"
+								placeholder="Enter Email address" /></label>
 							
-							 <textarea
-								 class="form-control" id="message_id"
-								placeholder="" ></textarea>
+							 <textarea class="form-control tinymce" rows="3" 
+								 ></textarea>
 						</div>
 
 						<button type="submit" class="btn btn-default"
-							onclick="savePublicNode($('#publicnode_id').val());">Send</button>
+							onclick="sendMessage();">Send</button>
 							
 							<br /><br />
 					</div>

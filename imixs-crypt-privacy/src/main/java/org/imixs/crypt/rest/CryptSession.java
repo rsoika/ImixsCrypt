@@ -36,9 +36,9 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
-import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.ImixsCryptKeyUtil;
+import org.imixs.crypt.util.Base64Coder;
 
 /**
  * The CryptSession is used by the SessionService as a singelton instance. The
@@ -489,5 +489,25 @@ class CryptSession {
 			logger.severe("[CryptSession] unable to generate imixs.properties! Please check file access!");
 			e1.printStackTrace();
 		}
+	}
+	
+	
+	/**
+	 * Writes a plublic key into the key store
+	 * @param property
+	 * @param asessionId
+	 * @return
+	 * @throws ImixsCryptException
+	 */
+	protected void savePublicKey(byte[] keyBytes,String keyFileName, String asessionId)
+			throws ImixsCryptException {
+
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
+					"Invalid SessionID: " + asessionId);
+
+		}
+		keyUtil.writeKeyToFile(keyBytes, keyFileName, asessionId);
 	}
 }

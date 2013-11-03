@@ -39,8 +39,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
-import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsCryptException;
+import org.imixs.crypt.util.Base64Coder;
+import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.KeyItem;
 
 /**
@@ -55,6 +56,7 @@ import org.imixs.crypt.xml.KeyItem;
 public class SessionService {
 
 	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
+	public final static String DEFAULT_PUBLIC_NODE = "default.public.node";
 
 	private final static Logger logger = Logger.getLogger(SessionService.class
 			.getName());
@@ -251,6 +253,52 @@ public class SessionService {
 		}
 		// success HTTP 200
 		return Response.status(Response.Status.OK).entity(value).build();
+
+	}
+
+	/**
+	 * This method sends the local public key to the default public server node
+	 * 
+	 * @param property
+	 *            - property to be set
+	 */
+	@POST
+	@Path("/session/publicnode")
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response publishPublicKey(KeyItem key,
+			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+
+		RestClient restClient = new RestClient();
+		restClient.setMediaType(MediaType.APPLICATION_JSON);
+
+		// get Host
+		String host;
+		try {
+			host = CryptSession.getInstance().getProperty(
+					SessionService.DEFAULT_PUBLIC_NODE, sessionId);
+
+			// test default identity
+			String uri = host + "/rest/identities/";
+			String json = "{\"user\":\"" + key.getUser() + "\",\"key\":\""
+					+ key.getKey() + "\"}";
+
+			// I don't know wy we got newLine charactars ....
+			json = json.replace("\n", "");
+
+			// uri =
+			// "http://localhost:8080/imixs-crypt-public/rest/identities/";
+			// String json2 =
+			// "{\"user\":\"ralph.soika@imixs.com\", \"key\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCet0H7qeQapHgIsyujUUoyurJUggYbasOt35D5qO48ik8gsFqXhys8Vkevkx31Q1S8mh9f+NQQ7ljguEvzdGjuAOOtQtJ4RhG4WqKE8O1J28YbBgmxOQlBUgL8cbJYp7egNVgqCPZNjCEj2pm1W8Zmd0rZTDAnRHST0Ztpkvk5MQIDAQAB\"}";
+
+			int httpResult = restClient.post(uri, json);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(null).build();
+
+		}
+		// success HTTP 200
+		return Response.status(Response.Status.OK).build();
 
 	}
 

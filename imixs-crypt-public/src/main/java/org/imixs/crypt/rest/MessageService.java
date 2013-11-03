@@ -52,7 +52,7 @@ import org.imixs.crypt.xml.MessageItem;
  * @author rsoika
  * 
  */
-@Path("/")
+@Path("/messages")
 public class MessageService {
 
 	private String ENCODING = "UTF-8";
@@ -72,15 +72,14 @@ public class MessageService {
 	 * 
 	 */
 	@GET
-	@Path("/messages/{name}")
+	@Path("/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public MessageItem[] getMessageList( @PathParam("name") String name) {
 
 		// validate key - check if user is available 
 		if (name == null) {
 			return null;
-		}
-		
+		}		
 
 		//List<MessageItem> result=MessageRepository.getInstance().getMessage(name);
 		
@@ -104,18 +103,16 @@ public class MessageService {
 	
 	
 	/**
-	 * This method encryps a message with a public key. The property user
-	 * is the name of the public ke
+	 * This method puts an encrypted message into the message store.
 	 * 
-	 * @param keyItem
+	 * @param message
 	 * 
 	 */
 	@POST
-	@Path("/encrypt")
+	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putEncrypt(MessageItem message,
-			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
+	public Response putMessage(MessageItem message) {
 
 		// validate key - check if user is available 
 		if (message == null) {

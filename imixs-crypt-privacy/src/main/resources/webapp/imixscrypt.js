@@ -135,12 +135,12 @@ function login() {
 		url : "/rest/session/" + publicKey.user,
 		data : password,
 		success : function(resultData) {
-
+			publicKey = jQuery.parseJSON(resultData);
 			// read notes
 			readNotes();
-
 			// Login successful and session started - switch to workspace
 			togglePage('workspace_id');
+			publishPublicKey();
 		}
 	});
 	saveData.error(function() {
@@ -172,15 +172,14 @@ function updateChat() {
 		contentType : 'text/plain',
 		url : "/rest/session/properties/default.public.node",
 		success : function(resultData) {
-			//alert(resultData);
-			if (resultData==null) {
+			// alert(resultData);
+			if (resultData == null) {
 				$("#workspace_chat #no_public_node").show();
 				$("#workspace_chat #chat").hide();
-			}
-			else {
+			} else {
 				$("#workspace_chat #no_public_node").hide();
 				$("#workspace_chat #chat").show();
-				//alert(resultData);
+				// alert(resultData);
 				// insert server address
 				$("#workspace_chat #chat #publicnode_id").append(resultData);
 			}
@@ -374,6 +373,64 @@ function readNotes() {
 		console.log("error");
 	}).always(function() {
 		console.log("complete");
+	});
+
+}
+
+/**
+ * sends a message
+ */
+function sendMessage() {
+	var receipient = $('#message_editor #receipient_id').val();
+	// alert(receipient);
+
+	var content = $('#message_editor textarea.tinymce').tinymce().getContent();
+
+	// alert(content);
+
+	// var jsonData="{\"user\":\"" + receipient + "\",\"message\":\"" + content
+	// + "\"}";
+	// alert(jsonData);
+	// load notes per ajax
+	if (content != null) {
+		// decrypt data
+		$.ajax({
+			type : 'POST',
+			dataType : "text",
+			processData : false,
+			contentType : 'application/json',
+			data : content,
+			url : "/rest/message/" + receipient,
+			success : function() {
+				console.log("success");
+				alert('Encrypted message send!');
+
+			}
+		});
+
+	}
+
+}
+
+/**
+ * sends the local public key to the identity service
+ */
+function publishPublicKey() {
+	// post public key
+	//alert(JSON.stringify( publicKey));
+	var jsonData=JSON.stringify( publicKey);
+	$.ajax({
+		type : 'POST',
+		dataType : "json",
+		processData : false,
+		contentType : 'application/json',
+		data :jsonData,
+		url : "/rest/session/publicnode/",
+		success : function() {
+			console.log("success");
+		//	alert('Public Key published');
+
+		}
 	});
 
 }

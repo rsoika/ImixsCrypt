@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -56,6 +55,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+
+import org.imixs.crypt.util.Base64Coder;
 
 /**
  * This class implements the imixsCrypt KeyUitl interface and provides methods
@@ -105,30 +106,15 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 
 			final KeyPair key = keyGen.generateKeyPair();
 
-			writeKeyToFile(key.getPublic(), publicKeyFileName, null);
+			writeKeyToFile(key.getPublic().getEncoded(), publicKeyFileName, null);
 
-			writeKeyToFile(key.getPrivate(), privateKeyFileName, password);
+			writeKeyToFile(key.getPrivate().getEncoded(), privateKeyFileName, password);
 			return key.getPublic();
 		} catch (NoSuchAlgorithmException e) {
 			throw new ImixsCryptException(
 					ImixsCryptException.NO_SUCH_ALGORITHM, e);
 
-		} catch (InvalidKeyException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (InvalidKeySpecException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (NoSuchPaddingException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (IllegalBlockSizeException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (BadPaddingException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (InvalidAlgorithmParameterException e) {
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
-		} catch (IOException e) {
-			throw new ImixsCryptException(ImixsCryptException.FILE_NOT_FOUND, e);
 		}
-
 	}
 
 	/**
@@ -343,22 +329,13 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 	/**
 	 * writes a key into the filesystem. using Base64 encoding
 	 * 
-	 * @throws IOException
-	 * @throws InvalidAlgorithmParameterException
-	 * @throws BadPaddingException
-	 * @throws IllegalBlockSizeException
-	 * @throws NoSuchPaddingException
-	 * @throws InvalidKeySpecException
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException
+	 * @throws ImixsCryptException
+	 * 
 	 * 
 	 * @throws Exception
 	 */
-	private static void writeKeyToFile(Key key, String keyFileName,
-			String password) throws IOException, InvalidKeyException,
-			NoSuchAlgorithmException, InvalidKeySpecException,
-			NoSuchPaddingException, IllegalBlockSizeException,
-			BadPaddingException, InvalidAlgorithmParameterException {
+	public  void writeKeyToFile(byte[] keyBytes, String keyFileName,
+			String password) throws ImixsCryptException {
 		// Saving the key in a file
 
 		File keyFile = new File(keyFileName);
@@ -366,12 +343,14 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 		if (keyFile.getParentFile() != null) {
 			keyFile.getParentFile().mkdirs();
 		}
-		keyFile.createNewFile();
+		try {
+			keyFile.createNewFile();
+		
 
 		/*
 		 * Check if password is used to encrypt the key
 		 */
-		byte[] keyBytes = key.getEncoded();
+	
 		if (password != null && !password.isEmpty()) {
 			System.out.println("Encrypting Key with password....");
 			// Here we actually encrypt the key
@@ -392,6 +371,24 @@ public class ImixsRSAKeyUtil implements ImixsCryptKeyUtil {
 		} finally {
 			if (out != null)
 				out.close();
+		}
+		
+		} catch (IOException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeyException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidKeySpecException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (NoSuchPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (IllegalBlockSizeException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (BadPaddingException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
+		} catch (InvalidAlgorithmParameterException e) {
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		}
 
 	}

@@ -1,4 +1,4 @@
-package org.imixs.crypt;
+package org.imixs.crypt.util;
 
 public class Base64Coder {
 	 // The line separator string of the operating system.

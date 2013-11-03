@@ -24,7 +24,7 @@
  *  	Imixs Software Solutions GmbH - initial API and implementation
  *  	Ralph Soika - Software Developer
  *******************************************************************************/
-package org.imixs.crypt;
+package org.imixs.crypt.util;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,14 +39,9 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Logger;
-
-import javax.ws.rs.core.MediaType;
 
 /**
  * This ServiceClient is a WebService REST Client which encapsulate the
@@ -69,7 +64,7 @@ public class RestClient {
 
 	private String encoding = "UTF-8";
 
-	private String mediaType = MediaType.APPLICATION_JSON;
+	private String mediaType = "application/json";
 
 	private int iLastHTTPResult = 0;
 

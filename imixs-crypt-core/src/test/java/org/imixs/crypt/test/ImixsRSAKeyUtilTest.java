@@ -7,8 +7,8 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.imixs.crypt.Base64Coder;
 import org.imixs.crypt.ImixsRSAKeyUtil;
+import org.imixs.crypt.util.Base64Coder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

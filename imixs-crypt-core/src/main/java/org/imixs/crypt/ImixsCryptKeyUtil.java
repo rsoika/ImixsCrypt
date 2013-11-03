@@ -25,8 +25,18 @@
 
 package org.imixs.crypt;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * KeyUtil is the general interface for key management and encryption methods.
@@ -47,4 +57,8 @@ public interface ImixsCryptKeyUtil {
 
 	public PrivateKey getPrivateKey(String filename, String password)
 			throws ImixsCryptException;
+	
+	
+	public void writeKeyToFile(byte[] keyBytes, String keyFileName,
+			String password) throws ImixsCryptException;
 }

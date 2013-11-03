@@ -4,7 +4,7 @@ import java.net.CookieManager;
 
 import javax.ws.rs.core.MediaType;
 
-import org.imixs.crypt.RestClient;
+import org.imixs.crypt.util.RestClient;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
