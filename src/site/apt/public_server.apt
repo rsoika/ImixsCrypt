@@ -3,10 +3,11 @@ ImixsCrypt-Public-Server
 
  The ImixsCrypt-Public-Server is a simple Web Application running on any 
  JEE based internet server.  
- The public server proivdes a REST API to post and get encrypted messages based on ImixsCrypt.
+ The public server proivdes a REST API to post and get public keys (identities) 
+ and encrypted messages.
  
  Any client can post a public key and encrypted messages. To receife a message a client can 
- get encrypted messages to decrypt them locally. 
+ get encrypted messages to decrypt them locally with his own private key. 
  
  
  
@@ -17,12 +18,20 @@ ImixsCrypt-Public-Server
   
 *---------------------*----------*------------------------------------------* 
 || Resource URI       || Method  || Description                        	   ||
-*---------------------+----------+------------------------------------------+
-| /messages            |GET      |Returns an arry of encrypted message s   	|
-|                     |          |                           				|
+*---------------------+--------- -+------------------------------------------+
+| /identities/(ID)    |GET     |Returns the public key     				|
+|                     |          | of the given id            				|
+|                     |          |				 							|
+*---------------------+--------- -+------------------------------------------+
+| /identities/(ID)      |POST    |saves a public key 						|
+|                     |          | for the given id            				|
+|                     |          |				 							|
+*---------------------+--------- -+------------------------------------------+
+| /messages/(ID)      |GET      |Returns an array of encrypted message    	|
+|                     |          | for the given id            				|
 |                     |          |				 							|
 *---------------------+----------+------------------------------------------+
-| /message            |POST      |Posting the encrypted message for a 		|
+| /messagees/(ID)     |POST      |Posting a encrypted message for a 		|
 |                     |          |specific user  							|
 |                     |          | 											|
 |                     |          | 											|
