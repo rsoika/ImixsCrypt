@@ -141,7 +141,7 @@ public class MessageService {
 		// find the users public key....
 		try {
 			logger.info("[MessageService] decrypting message from '"
-					+ message.getUser() + "'");
+					+ message.getSender() + "'");
 
 			byte[] data = Base64Coder.decode(message.getMessage());
 

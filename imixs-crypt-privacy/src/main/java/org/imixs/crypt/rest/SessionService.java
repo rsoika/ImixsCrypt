@@ -42,10 +42,10 @@ import javax.ws.rs.core.Response;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.util.Base64Coder;
 import org.imixs.crypt.util.RestClient;
-import org.imixs.crypt.xml.KeyItem;
+import org.imixs.crypt.xml.IdentityItem;
 
 /**
- * Provides a service to open and close a crypt session. Setting the private key
+ * Provides a service to open and close a session. Setting the private key
  * password creates a new sessionId. The sessionId is stored in the cookie
  * ImixsCryptSessionID.
  * 
@@ -62,12 +62,12 @@ public class SessionService {
 			.getName());
 
 	/**
-	 * This method opens a new session. The POST method expects the ID and a
-	 * password for the corresponding local private key.
+	 * This method opens a new session. The POST method expects an IdentityItem
+	 * with the local ID and the password for the corresponding local private
+	 * key.
 	 * 
-	 * The password and ID will be stored in the local instance of the
-	 * CryptSession. A sessionId will be returned to be used for further method
-	 * calls.
+	 * A sessionId will be returned to be used for further method calls. The
+	 * identity will be stored in the local instance of the CryptSession.
 	 * 
 	 * The Method verifies if a local key pair for the given Id exists. If not
 	 * the method will generate a new key pair, encrypted with the given
@@ -76,46 +76,48 @@ public class SessionService {
 	 * Finally the method creates the ImixsCryptSession Cookie with the current
 	 * sessionId.
 	 * 
+	 * The method returns the identity with the local public key
+	 * 
 	 * @param password
 	 *            - password to be set
 	 */
 	@POST
-	@Path("/session/{id}")
-	@Consumes("text/plain")
+	@Path("/session")
+	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSession(String password, @PathParam("id") String id) {
+	public Response createSession(IdentityItem identity) {
 		PublicKey publicKey = null;
 		// test if id and password a provided
-		if (password == null || password.isEmpty()) {
+		if (identity == null || identity.getKey().isEmpty()) {
 			CryptSession.getInstance().closeSession();
 			logger.info("Session closed");
 		} else {
 			// open new Session
 
 			try {
-				CryptSession.getInstance().openSession(id, password);
+				CryptSession.getInstance().openSession(identity.getId(),
+						identity.getKey());
 
-				if (password != null && !password.isEmpty()) {
-					// verify if a key pair exists
-					publicKey = CryptSession.getInstance()
-							.getLocalPublicKey(id);
-					if (publicKey == null) {
-						logger.info("[SessionService] generate new KeyPair...");
-						try {
-							publicKey = CryptSession.getInstance()
-									.generateKeyPair();
-						} catch (Exception e) {
-							e.printStackTrace();
-							return Response
-									.status(Response.Status.INTERNAL_SERVER_ERROR)
-									.type(MediaType.TEXT_PLAIN)
-									.cookie(new NewCookie(SESSION_COOKIE, ""))
-									.build();
-						}
-					} else {
-						logger.info("Session opened");
+				// verify if a key pair exists
+				publicKey = CryptSession.getInstance().getLocalPublicKey(
+						identity.getId());
+				if (publicKey == null) {
+					logger.info("[SessionService] generate new KeyPair...");
+					try {
+						publicKey = CryptSession.getInstance()
+								.generateKeyPair();
+					} catch (Exception e) {
+						e.printStackTrace();
+						return Response
+								.status(Response.Status.INTERNAL_SERVER_ERROR)
+								.type(MediaType.TEXT_PLAIN)
+								.cookie(new NewCookie(SESSION_COOKIE, ""))
+								.build();
 					}
+				} else {
+					logger.info("Session opened");
 				}
+
 			} catch (ImixsCryptException e1) {
 				e1.printStackTrace();
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -133,19 +135,12 @@ public class SessionService {
 		NewCookie sessionCookie = new NewCookie(SESSION_COOKIE, newSessionId,
 				path, domain, "", -1, false);
 
-		KeyItem key = new KeyItem();
-		key.setUser(id);
-		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
+		// return an identity with the public key
+		identity.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
 
 		// success HTTP 200
-		return Response.status(Response.Status.OK).entity(key)
-				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie)
-				.entity(key).build();
-
-		// return
-		// Response.ok(MediaType.TEXT_PLAIN).cookie(sessionCookie).build();
-
-		// return Response.ok(MediaType.TEXT_PLAIN).build();
+		return Response.status(Response.Status.OK).entity(identity)
+				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie).build();
 
 	}
 
@@ -159,17 +154,16 @@ public class SessionService {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getPublicKey(@PathParam("id") String id) {
 		PublicKey publicKey = null;
-		KeyItem key = new KeyItem();
-
+		IdentityItem identity=new IdentityItem();
+		identity.setId(id);
 		try {
 			publicKey = CryptSession.getInstance().getLocalPublicKey(id);
 			if (publicKey == null) {
 				logger.info("KeyPair not yet created");
 
-				// return Response.status(Response.Status.ACCEPTED).entity(null)
-				// .type(MediaType.APPLICATION_JSON).build();
 				// Return an emypt key
-				return Response.status(Response.Status.OK).entity(key)
+				identity.setKey(null);
+				return Response.status(Response.Status.OK).entity(identity)
 						.type(MediaType.APPLICATION_JSON).build();
 			}
 		} catch (Exception e) {
@@ -177,28 +171,27 @@ public class SessionService {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(null).type(MediaType.APPLICATION_JSON).build();
 		}
-		// lower case
+		
 
 		// Return the key
-		key.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
-		key.setUser(CryptSession.getInstance().getIdentity());
-
-		return Response.status(Response.Status.OK).entity(key)
+		identity.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
+		
+		return Response.status(Response.Status.OK).entity(identity)
 				.type(MediaType.APPLICATION_JSON).build();
 
 	}
 
 	/**
-	 * Returns the default local public key. The method can be used to test if
-	 * the PrivateCrypt Server is initialized with a valid key pair.
+	 * Returns the local default public key if a local key pair exits.
 	 * 
 	 * @return
 	 */
 	@GET
-	@Path("/session/")
+	@Path("/session")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDefaultPublicKey() {
 		return getPublicKey(null);
+		
 	}
 
 	/**
@@ -265,7 +258,7 @@ public class SessionService {
 	@POST
 	@Path("/session/publicnode")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response publishPublicKey(KeyItem key,
+	public Response publishPublicKey(IdentityItem key,
 			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
 
 		RestClient restClient = new RestClient();
@@ -279,7 +272,7 @@ public class SessionService {
 
 			// test default identity
 			String uri = host + "/rest/identities/";
-			String json = "{\"user\":\"" + key.getUser() + "\",\"key\":\""
+			String json = "{\"user\":\"" + key.getId() + "\",\"key\":\""
 					+ key.getKey() + "\"}";
 
 			// I don't know wy we got newLine charactars ....

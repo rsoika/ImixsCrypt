@@ -35,20 +35,25 @@ import javax.xml.bind.annotation.XmlRootElement;
  * 
  */
 @XmlRootElement(name = "keyItem")
-public class KeyItem implements java.io.Serializable {
+public class IdentityItem implements java.io.Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String user;
+	private String id;
 	private String key;
 
-	public String getUser() {
-		return user;
+	
+
+	public String getId() {
+		return id;
 	}
 
-	public void setUser(String user) {
-		this.user = user;
+	public void setId(String id) {
+		// lowercase id
+		if (id!=null)
+			id=id.toLowerCase().trim();
+		this.id = id;
 	}
 
 	public String getKey() {

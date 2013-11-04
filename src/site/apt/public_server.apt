@@ -2,9 +2,8 @@ ImixsCrypt-Public-Server
 ~~~~~~~~~~~~~~
 
  The ImixsCrypt-Public-Server is a simple Web Application running on any 
- JEE based internet server.  
- The public server proivdes a REST API to post and get public keys (identities) 
- and encrypted messages.
+ JEE based Internet server.  
+ The public server provides a REST API to manage identities and encrypted data.
  
  Any client can post a public key and encrypted messages. To receife a message a client can 
  get encrypted messages to decrypt them locally with his own private key. 

@@ -20,7 +20,7 @@ import org.junit.Test;
 public class SessionTest { 
 	String PASSWORD = "abc";
 	String HOST = "http://127.0.0.1:4040";
-	String IDENTITY="id";
+	String IDENTITY="little.john@sherwood.forest";
 	
 	/**
 	 * generate key pair
@@ -72,10 +72,10 @@ public class SessionTest {
 		Assert.assertFalse(keyFile.exists());
 
 		// generate new key by opening a session with a password
-		String uri = HOST + "/rest/session/"+IDENTITY;
-		String value = "some-password";
+		String uri = HOST + "/rest/session";
+		String value = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + PASSWORD+ "\"}";
 		try { 
-			restClient.setMediaType(MediaType.TEXT_PLAIN);
+			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.post(uri, value);
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
@@ -98,14 +98,14 @@ public class SessionTest {
 	 * Test GET the local public key
 	 */
 	@Test
-	public void testGetSession() {
+	public void testGetDefaultIdentity() {
 
 		RestClient restClient = new RestClient();
 
 		// test default identity
 		String uri = HOST + "/rest/session/";
 		try {
-			restClient.setMediaType(MediaType.TEXT_PLAIN);
+			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.get(uri);
 
 			String sContent = restClient.getContent();
@@ -121,28 +121,28 @@ public class SessionTest {
 		}
 
 		// next delete key pair and test again - http result 202 exptected
-		File keyFile = new File("src/test/resources/keys/id");
+		File keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		if (keyFile.exists())
 			keyFile.delete();
-		keyFile = new File("src/test/resources/keys/id.pub");
+		keyFile = new File("src/test/resources/keys/" + IDENTITY + ".pub");
 		if (keyFile.exists())
 			keyFile.delete();
 
-		keyFile = new File("src/test/resources/keys/id");
+		keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		Assert.assertFalse(keyFile.exists());
 
-		keyFile = new File("src/test/resources/id.pub");
+		keyFile = new File("src/test/resources/" + IDENTITY + ".pub");
 		Assert.assertFalse(keyFile.exists());
 
 		// now call rest service....
 
 		try {
-			restClient.setMediaType(MediaType.TEXT_PLAIN);
+			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.get(uri);
 			String sContent = restClient.getContent();
 			Assert.assertEquals(200, httpResult);
 			// result should be a n emypt key
-			Assert.assertEquals("{\"user\":null,\"key\":null}", sContent.trim());
+			Assert.assertEquals("{\"id\":null,\"key\":null}", sContent.trim());
 		} catch (Exception e) {
 
 			e.printStackTrace();
@@ -156,7 +156,7 @@ public class SessionTest {
 	 * Test GET the local public key
 	 */
 	@Test
-	public void testGetKey() {
+	public void testGetPublicKey() {
 
 		RestClient restClient = new RestClient();
 

@@ -40,21 +40,41 @@ public class MessageItem implements java.io.Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String user;
+	private String recipient;
+	private String sender;
 	private String message;
+	private long created;
 
-	public String getUser() {
-		return user;
+	public String getRecipient() {
+		return recipient;
+	}
+
+	public String getSender() {
+		return sender;
+	}
+
+	public void setSender(String asender) {
+		if (asender != null)
+			asender = asender.trim().toLowerCase();
+		this.sender = asender;
 	}
 
 	/**
 	 * usernames are lower cased automatically!
-	 * @param auser
+	 * @param arecipient
 	 */
-	public void setUser(String auser) {
-		if (auser != null)
-			auser = auser.trim().toLowerCase();
-		this.user = auser;
+	public void setRecipient(String arecipient) {
+		if (arecipient != null)
+			arecipient = arecipient.trim().toLowerCase();
+		this.recipient = arecipient;
+	}
+
+	public long getCreated() {
+		return created;
+	}
+
+	public void setCreated(long created) {
+		this.created = created;
 	}
 
 	public String getMessage() {
