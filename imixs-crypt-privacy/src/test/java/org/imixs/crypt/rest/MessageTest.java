@@ -34,7 +34,7 @@ public class MessageTest {
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = HOST + "/rest/session/" + IDENTITY;
+		String uri = HOST + "/rest/identities/" + IDENTITY;
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.post(uri, PASSWORD);
@@ -82,7 +82,7 @@ public class MessageTest {
 		restClient.setCookies(cookieManager);
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
-		String uri = HOST + "/rest/message/encrypt/";
+		String uri = HOST + "/rest/messages";
 		// create a json test string
 		String json = "{\"user\":\"test.user@imixs.org\", \"message\":\"Hallo Welt\"}";
 
@@ -96,7 +96,7 @@ public class MessageTest {
 			Assert.assertEquals(200, httpResult);
 
 			// decrypt
-			uri = HOST + "/rest/message/decrypt/";
+			uri = HOST + "/rest/messages";
 
 			restClient.setCookies(cookieManager);
 			httpResult = restClient.post(uri, sContent);

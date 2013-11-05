@@ -53,12 +53,12 @@ import org.imixs.crypt.xml.IdentityItem;
  * 
  */
 @Path("/rest")
-public class SessionService {
+public class IdentityService {
 
 	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
 	public final static String DEFAULT_PUBLIC_NODE = "default.public.node";
 
-	private final static Logger logger = Logger.getLogger(SessionService.class
+	private final static Logger logger = Logger.getLogger(IdentityService.class
 			.getName());
 
 	/**
@@ -82,7 +82,7 @@ public class SessionService {
 	 *            - password to be set
 	 */
 	@POST
-	@Path("/session")
+	@Path("/identities")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createSession(IdentityItem identity) {
@@ -150,7 +150,7 @@ public class SessionService {
 	 * @return
 	 */
 	@GET
-	@Path("/session/{id}")
+	@Path("/identities/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getPublicKey(@PathParam("id") String id) {
 		PublicKey publicKey = null;
@@ -187,7 +187,7 @@ public class SessionService {
 	 * @return
 	 */
 	@GET
-	@Path("/session")
+	@Path("/identities")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDefaultPublicKey() {
 		return getPublicKey(null);
@@ -206,7 +206,7 @@ public class SessionService {
 	@Consumes("text/plain")
 	public Response setProperty(String value,
 			@PathParam("property") String property,
-			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		try {
 			CryptSession.getInstance().setProperty(property, value, sessionId);
@@ -233,7 +233,7 @@ public class SessionService {
 	@Path("/session/properties/{property}")
 	@Produces("text/plain")
 	public Response getProperty(@PathParam("property") String property,
-			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 		String value = null;
 		try {
 			value = CryptSession.getInstance().getProperty(property, sessionId);
@@ -259,7 +259,7 @@ public class SessionService {
 	@Path("/session/publicnode")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response publishPublicKey(IdentityItem key,
-			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
@@ -268,7 +268,7 @@ public class SessionService {
 		String host;
 		try {
 			host = CryptSession.getInstance().getProperty(
-					SessionService.DEFAULT_PUBLIC_NODE, sessionId);
+					IdentityService.DEFAULT_PUBLIC_NODE, sessionId);
 
 			// test default identity
 			String uri = host + "/rest/identities/";

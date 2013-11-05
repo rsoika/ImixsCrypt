@@ -59,6 +59,7 @@ import org.imixs.crypt.xml.NoteItem;
  * 
  */
 @Path("/rest/notes")
+@Deprecated
 public class NotesService {
 
 	private String ENCODING = "UTF-8";
@@ -78,7 +79,7 @@ public class NotesService {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putNote(String message, @PathParam("name") String name,
-			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		// validate key
 		if (message == null) {
@@ -92,14 +93,14 @@ public class NotesService {
 
 		try {
 
-			byte[] data = message.getBytes(ENCODING);
-			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data,
-					sessionId);
+//			byte[] data = message.getBytes(ENCODING);
+//			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data,
+//					sessionId);
 
-			// save data into file
-			Files.write(
-					Paths.get(CryptSession.getInstance().getRootPath()
-							+ "data/notes/" + name), encrypted);
+//			// save data into file
+//			Files.write(
+//					Paths.get(CryptSession.getInstance().getRootPath()
+//							+ "data/notes/" + name), encrypted);
 
 			logger.info("[NotesService] encrypted=" + name);
 		} catch (Exception e) {
@@ -127,7 +128,7 @@ public class NotesService {
 	@Path("/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String getNote(@PathParam("name") String name,
-			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value =  IdentityService.SESSION_COOKIE) String sessionId) {
 		String text = null;
 		// validate key
 		if (name == null || name.isEmpty()) {
@@ -140,9 +141,9 @@ public class NotesService {
 			byte[] data = Files.readAllBytes(Paths.get(CryptSession
 					.getInstance().getRootPath() + "data/notes/" + name));
 
-			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
-					sessionId);
-			text = new String(decrypted, ENCODING);
+//			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
+//					sessionId);
+//			text = new String(decrypted, ENCODING);
 
 			logger.info("[NotesService] decrypted=" + name);
 		} catch (Exception e) {
@@ -168,7 +169,7 @@ public class NotesService {
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<NoteItem> getNotes(
-			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value =  IdentityService.SESSION_COOKIE) String sessionId) {
 
 		if (!CryptSession.getInstance().isValidSession(sessionId))
 			return null;
@@ -198,7 +199,7 @@ public class NotesService {
 	@DELETE
 	@Path("/{name}")
 	public Response deleteNote(@PathParam("name") String name,
-			@CookieParam(value =  SessionService.SESSION_COOKIE) String sessionId) {
+			@CookieParam(value =  IdentityService.SESSION_COOKIE) String sessionId) {
 
 		// validate key
 		if (name == null || name.isEmpty()) {

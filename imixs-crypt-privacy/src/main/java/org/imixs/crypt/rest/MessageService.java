@@ -25,11 +25,13 @@
 
 package org.imixs.crypt.rest;
 
+import java.io.IOException;
 import java.security.PublicKey;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -38,7 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.ImixsCryptException;
-import org.imixs.crypt.util.Base64Coder;
+import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.MessageItem;
 
@@ -53,7 +55,7 @@ import org.imixs.crypt.xml.MessageItem;
  * @author rsoika
  * 
  */
-@Path("/rest/message")
+@Path("/rest/messages")
 public class MessageService {
 
 	private String ENCODING = "UTF-8";
@@ -62,74 +64,95 @@ public class MessageService {
 			.getName());
 
 	/**
-	 * This method encryps a message with a public key.
+	 * This method posts a messageItem and encrypt the message with the public
+	 * key of the recipient.
 	 * 
-	 * @param keyItem
+	 * If not recipient is defined the message will be encrypted with the local
+	 * public key and stored into the filesystem /data/messages
+	 * 
+	 * @param MessageItem
 	 * 
 	 */
 	@POST
-	@Path("/{receipient}")
+	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response sendMessage(String message,
-			@PathParam("receipient") String receipient,
-			@CookieParam(value = SessionService.SESSION_COOKIE) String sessionId) {
+	public Response postMessage(
+			MessageItem message,
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		// validate key - check if user is available
 		if (message == null) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
-		if (receipient == null || receipient.isEmpty()) {
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(message).build();
-		}
-
 		try {
+			// encrypt message
+			MessageItem encryptedMessage = CryptSession.getInstance().ecrypt(
+					message, sessionId);
+
+			// if no recipient is define store the message locally
+			if (encryptedMessage.getRecipient() == null
+					|| encryptedMessage.getRecipient().isEmpty()) {
+
+				// save data into file
+				JSONWriter.writeMessageItem(encryptedMessage, CryptSession
+						.getInstance().getRootPath()
+						+ "data/notes/"
+						+ encryptedMessage.getDigest());
+
+				return Response.status(Response.Status.OK)
+						.type(MediaType.APPLICATION_JSON).entity(message)
+						.build();
+			}
+
+			// No local message so we need to send it over the internet.....
+
 			// test if we have a public key...
 			PublicKey publicKey = CryptSession.getInstance().getPublicKey(
-					receipient, sessionId);
+					encryptedMessage.getRecipient(), sessionId);
 
 			if (publicKey == null) {
 				// fetch key from public node....
-				fetchPublicKeyFromPublicServer(receipient, sessionId);
+				fetchPublicKeyFromPublicServer(encryptedMessage.getRecipient(),
+						sessionId);
 			}
 
 			logger.info("[MessageService] encrypting message for '"
-					+ receipient + "'");
-			byte[] data = message.getBytes(ENCODING);
-			byte[] encrypted = CryptSession.getInstance().ecrypt(data,
-					receipient, sessionId);
+					+ encryptedMessage.getRecipient() + "'");
 
-			String text=new String(Base64Coder.encode(encrypted));
-			
-			sendMessageToPublicServer(text,receipient,sessionId);
-			
-			logger.info("encrypted="+text);
-		} catch (Exception e) {
+			// sendMessageToPublicServer(text, receipient, sessionId);
+
+			logger.info("encrypted=" + encryptedMessage.getMessage());
+		} catch (ImixsCryptException e) {
 
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
 
 		// success HTTP 200
-		return Response.ok("", MediaType.APPLICATION_JSON).build();
+		return Response.status(Response.Status.OK)
+				.type(MediaType.APPLICATION_JSON).entity(message).build();
 
 	}
 
 	/**
-	 * This method sends the public key to the public server node
+	 * This method gets a message by its id
 	 * 
-	 * @param keyItem
+	 * @param MessageItem
 	 * 
 	 */
-	@POST
-	@Path("/decrypt")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@GET
+	@Path("/{name}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response putDecrypt(MessageItem message,
+			@PathParam("name") String name,
 			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key
@@ -143,11 +166,11 @@ public class MessageService {
 			logger.info("[MessageService] decrypting message from '"
 					+ message.getSender() + "'");
 
-			byte[] data = Base64Coder.decode(message.getMessage());
-
-			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
-					sessionId);
-			message.setMessage(new String(decrypted, ENCODING));
+//			byte[] data = Base64Coder.decode(message.getMessage());
+//
+//			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
+//					sessionId);
+//			message.setMessage(new String(decrypted, ENCODING));
 
 			logger.info("decrypted=" + message.getMessage());
 		} catch (Exception e) {
@@ -162,13 +185,13 @@ public class MessageService {
 
 	}
 
-	private PublicKey fetchPublicKeyFromPublicServer(String user, String asessionId)
-			throws ImixsCryptException {
+	private PublicKey fetchPublicKeyFromPublicServer(String user,
+			String asessionId) throws ImixsCryptException {
 
 		RestClient restClient = new RestClient();
 		// get Host
 		String host = CryptSession.getInstance().getProperty(
-				SessionService.DEFAULT_PUBLIC_NODE, asessionId);
+				IdentityService.DEFAULT_PUBLIC_NODE, asessionId);
 
 		// test default identity
 		String uri = host + "/rest/identities/" + user;
@@ -205,7 +228,7 @@ public class MessageService {
 		RestClient restClient = new RestClient();
 		// get Host
 		String host = CryptSession.getInstance().getProperty(
-				SessionService.DEFAULT_PUBLIC_NODE, asessionId);
+				IdentityService.DEFAULT_PUBLIC_NODE, asessionId);
 
 		// test default identity
 		String uri = host + "/rest/session/" + user;
@@ -219,6 +242,5 @@ public class MessageService {
 			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY, e);
 		}
 
-		
 	}
 }

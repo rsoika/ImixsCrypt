@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -39,6 +40,7 @@ import java.util.logging.Logger;
 import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.ImixsCryptKeyUtil;
 import org.imixs.crypt.util.Base64Coder;
+import org.imixs.crypt.xml.MessageItem;
 
 /**
  * The CryptSession is used by the SessionService as a singelton instance. The
@@ -55,6 +57,7 @@ import org.imixs.crypt.util.Base64Coder;
  */
 class CryptSession {
 
+	private String ENCODING = "UTF-8";
 	public static String IMIXS_PROPERTY_FILE = "imixs.properties";
 
 	public static String PROPERTY_KEY_UTIL = "keyutil";
@@ -335,6 +338,58 @@ class CryptSession {
 	}
 
 	/**
+	 * This method encrypt a MessageItem and returns a new MessageItem with the
+	 * ecrypted and signed data.
+	 * 
+	 * @param message
+	 * @param aUserID
+	 * @param asessionId
+	 * @return
+	 * @throws ImixsCryptException
+	 */
+	protected MessageItem ecrypt(MessageItem message, String asessionId)
+			throws ImixsCryptException {
+		byte[] encrypted = null;
+
+		// validate session
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
+					"Invalid SessionID: " + asessionId);
+
+		}
+
+		MessageItem encryptedMessage = new MessageItem();
+		encryptedMessage.setRecipient(message.getRecipient());
+		encryptedMessage.setSender(message.getSender());
+
+		// get public key of recipient
+		PublicKey publicKey = this.getLocalPublicKey(message.getRecipient());
+
+		// encrypt comment
+		try {
+			encrypted = keyUtil.encrypt(
+					message.getComment().getBytes(ENCODING), publicKey);
+
+			encryptedMessage.setComment(Base64Coder.encodeString(new String(
+					encrypted)));
+
+			// encrypt message
+			encrypted = keyUtil.encrypt(message.getMessage().getBytes(ENCODING),
+					publicKey);
+			encryptedMessage.setMessage(Base64Coder.encodeString(new String(
+					encrypted)));
+		} catch (UnsupportedEncodingException e) {
+			throw new ImixsCryptException(ImixsCryptException.UNSUPPORTED_ENCODING, e);
+		}
+
+		// sign message
+		// @TODO
+
+		return encryptedMessage;
+	}
+
+	/**
 	 * Encrypts a message String with a public key. The encrypted byte array
 	 * will be returned Base64 encoded.
 	 * 
@@ -345,7 +400,7 @@ class CryptSession {
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	protected byte[] ecrypt(byte[] data, String aUserID, String asessionId)
+	private byte[] ecrypt(byte[] data, String aUserID, String asessionId)
 			throws ImixsCryptException {
 		if (!isValidSession(asessionId)) {
 			logger.warning("[CryptSession] invalid sessionId!");
@@ -375,7 +430,7 @@ class CryptSession {
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 */
-	protected byte[] ecryptLocal(byte[] data, String asessionId)
+	private byte[] ecryptLocal(byte[] data, String asessionId)
 			throws ImixsCryptException {
 
 		if (!isValidSession(asessionId)) {
@@ -402,7 +457,7 @@ class CryptSession {
 	 * @return
 	 * @throws ImixsCryptException
 	 */
-	protected byte[] decryptLocal(byte[] encryptedData, String asessionId)
+	private byte[] decryptLocal(byte[] encryptedData, String asessionId)
 			throws ImixsCryptException {
 
 		PrivateKey privateKey;
@@ -490,17 +545,17 @@ class CryptSession {
 			e1.printStackTrace();
 		}
 	}
-	
-	
+
 	/**
 	 * Writes a plublic key into the key store
+	 * 
 	 * @param property
 	 * @param asessionId
 	 * @return
 	 * @throws ImixsCryptException
 	 */
-	protected void savePublicKey(byte[] keyBytes,String keyFileName, String asessionId)
-			throws ImixsCryptException {
+	protected void savePublicKey(byte[] keyBytes, String keyFileName,
+			String asessionId) throws ImixsCryptException {
 
 		if (!isValidSession(asessionId)) {
 			logger.warning("[CryptSession] invalid sessionId!");

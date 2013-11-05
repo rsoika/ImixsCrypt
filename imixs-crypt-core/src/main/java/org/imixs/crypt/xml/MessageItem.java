@@ -43,7 +43,10 @@ public class MessageItem implements java.io.Serializable {
 	private String recipient;
 	private String sender;
 	private String message;
+	private String comment;
 	private long created;
+	private String signature;
+	private String digest;
 
 	public String getRecipient() {
 		return recipient;
@@ -85,4 +88,30 @@ public class MessageItem implements java.io.Serializable {
 		this.message = message;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public String getSignature() {
+		return signature;
+	}
+
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+
+	public String getDigest() {
+		return digest;
+	}
+
+	public void setDigest(String digest) {
+		this.digest = digest;
+	}
+
+	
+	
 }

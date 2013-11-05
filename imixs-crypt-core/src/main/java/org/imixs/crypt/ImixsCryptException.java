@@ -38,6 +38,7 @@ public class ImixsCryptException extends Exception {
 	public static String FILE_NOT_FOUND = "FILE_NOT_FOUND";
 	public static String NO_SUCH_ALGORITHM = "NO_SUCH_ALGORITHM";
 	public static String INVALID_KEY = "INVALID_KEY";
+	public static String UNSUPPORTED_ENCODING = "UNSUPPORTED_ENCODING";
 
 	protected String errorCode = "UNDEFINED";
 

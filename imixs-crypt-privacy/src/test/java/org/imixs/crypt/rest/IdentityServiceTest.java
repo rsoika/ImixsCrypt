@@ -17,7 +17,7 @@ import org.junit.Test;
  * @author rsoika
  * 
  */
-public class SessionTest { 
+public class IdentityServiceTest { 
 	String PASSWORD = "abc";
 	String HOST = "http://127.0.0.1:4040";
 	String IDENTITY="little.john@sherwood.forest";
@@ -72,7 +72,7 @@ public class SessionTest {
 		Assert.assertFalse(keyFile.exists());
 
 		// generate new key by opening a session with a password
-		String uri = HOST + "/rest/session";
+		String uri = HOST + "/rest/identities";
 		String value = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + PASSWORD+ "\"}";
 		try { 
 			restClient.setMediaType(MediaType.APPLICATION_JSON);
@@ -103,7 +103,7 @@ public class SessionTest {
 		RestClient restClient = new RestClient();
 
 		// test default identity
-		String uri = HOST + "/rest/session/";
+		String uri = HOST + "/rest/identities/";
 		try {
 			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.get(uri);
@@ -161,7 +161,7 @@ public class SessionTest {
 		RestClient restClient = new RestClient();
 
 		// test default identity
-		String uri = HOST + "/rest/session/"+IDENTITY;
+		String uri = HOST + "/rest/identities/"+IDENTITY;
 		try {
 			restClient.setMediaType(MediaType.TEXT_PLAIN);
 			int httpResult = restClient.get(uri);

@@ -43,6 +43,7 @@ ImixsCrypt Private Server
  "sender": "little.john@sherwood.forest",
  "recipient": "robin.hood@sherwood.forest",
  "message": "Have nought but a staff in my hand...",
+ "comment": "Important Message",
  "signature": "L1I5VR9bAxyjJ..."
  "created": "14524355"
 } 
@@ -103,21 +104,21 @@ ImixsCrypt Private Server
 *---------------------*----------*------------------------------------------* 
 || Resource URI       || Method  || Description                            ||
 *---------------------+----------+------------------------------------------+
-| /session     	  	  |GET       |Returns the local public key of the default identity|
+| /identities     	  |GET       |Returns the local public key of the default identity|
 |                     |          |The default identity is stored in the 	|
 |                     |          |properties and can be set with the POST method|
 |                     |          |HTTP-202=no key found, HTTP-200=key found	|
 *---------------------+----------+------------------------------------------+
-| /session/(id) 	  |GET       |Returns the local public key for a given identity|
+| /identities/(id) 	  |GET       |Returns the local public key for a given identity|
 |                     |          |HTTP-202=no key found, HTTP-200=key found	|
 *---------------------+----------+------------------------------------------+
-| /session 			  |POST      |Posts a private key password and opens a  |
+| /identities 		  |POST      |Posts a private key password and opens a  |
 |                     |          |session for a specific identity.  		|
 |                     |          |\{"id":"robin.hood@sherwood.forest","key": "my password"\} |
 |                     |          |If no key-pair still exits and a password |
 |                     |          |was provided then a new local key pair will be generated.      |
 *---------------------+----------+---------------------------------------+
-| /session/			  |DELETE    |Closes the current session				|
+| /identities/		  |DELETE    |Closes the current session				|
 |                     |          |session for a specific identity.  		|
 |                     |          |\{"id":"robin.hood@sherwood.forest","key": ""\} |
 *---------------------+----------+---------------------------------------+
