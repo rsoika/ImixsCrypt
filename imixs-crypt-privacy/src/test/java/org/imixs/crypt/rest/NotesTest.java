@@ -4,7 +4,9 @@ import java.net.CookieManager;
 
 import javax.ws.rs.core.MediaType;
 
+import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.util.RestClient;
+import org.imixs.crypt.xml.MessageItem;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +31,11 @@ public class NotesTest {
 	@Before
 	public void setup() {
 		RestClient restClient = new RestClient();
-		String uri = HOST + "/rest/session/"+IDENTITY;
+		String uri = HOST + "/rest/identities";
+		String json = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + PASSWORD+ "\"}";
 		try {
-			restClient.setMediaType(MediaType.TEXT_PLAIN);
-			int httpResult = restClient.post(uri, PASSWORD);
+			restClient.setMediaType(MediaType.APPLICATION_JSON);
+			int httpResult = restClient.post(uri, json);
 			
 			// store the session cookie
 			cookieManager = restClient.getCookies();
@@ -50,20 +53,28 @@ public class NotesTest {
 	 * Test encrypt and text into a notes data file
 	 */
 	@Test
-	public void testPostEncryptNotes() {
+	public void testPostNote() {
 
 		RestClient restClient = new RestClient();
 		restClient.setCookies(cookieManager);
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
-		String notesName = "test";
-
-		String uri = HOST + "/rest/messages/" + notesName;
+		String uri = HOST + "/rest/messages" ;
 		// create a json test string
-		String message = "Hallo Welt";
+		MessageItem message =new MessageItem();
+		message.setMessage("Hallo Welt");
 
+		message.setComment("");
+		message.setCreated(1);
+		message.setDigest("");
+		message.setRecipient("");
+		message.setSender("");
+		message.setSignature("");
+		// create json string....
+		String json=JSONWriter.toString(message);
+		
 		try {
-			int httpResult = restClient.post(uri, message);
+			int httpResult = restClient.post(uri, json);
 
 			String sContent = restClient.getContent();
 
@@ -73,7 +84,7 @@ public class NotesTest {
 
 			// decrypt again....
 
-			uri = HOST + "/rest/messages/" + notesName;
+			uri = HOST + "/rest/messages" ;
 			String result = null;
 			
 			// set session cookie

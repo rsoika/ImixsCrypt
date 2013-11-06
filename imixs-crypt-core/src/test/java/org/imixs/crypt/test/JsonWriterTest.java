@@ -10,6 +10,7 @@ import junit.framework.Assert;
 
 import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.xml.IdentityItem;
+import org.imixs.crypt.xml.MessageItem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class JsonWriterTest {
 		identity.setKey("mykey");
 
 		try {
-			JSONWriter.writeIdentityItem(identity, FILE_PATH);
+			JSONWriter.writeFile(identity, FILE_PATH);
 
 			// test content of new file...
 			String jsonContent = readFile(FILE_PATH);
@@ -69,6 +70,39 @@ public class JsonWriterTest {
 			e.printStackTrace();
 		}
 	}
+	
+	
+	
+	
+	/**
+	 * Test filewriter
+	 */
+	@Test
+	public void writeMessageToFile() {
+		MessageItem message = new MessageItem();
+
+		message.setMessage("TEST DATA");
+
+		
+			String jsonContent =	JSONWriter.toString(message);
+
+			// test content of new file...
+			
+			logger.info(jsonContent);
+			
+			Assert.assertTrue(jsonContent.contains("\"message\":\"TEST DATA\""));
+	
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 	private String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));

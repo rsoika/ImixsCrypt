@@ -96,7 +96,7 @@ public class MessageService {
 					|| encryptedMessage.getRecipient().isEmpty()) {
 
 				// save data into file
-				JSONWriter.writeMessageItem(encryptedMessage, CryptSession
+				JSONWriter.writeFile(encryptedMessage, CryptSession
 						.getInstance().getRootPath()
 						+ "data/notes/"
 						+ encryptedMessage.getDigest());
