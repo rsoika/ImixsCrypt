@@ -45,12 +45,14 @@ import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.MessageItem;
 
 /**
- * The Message is used to encrypt and decrypt messages provided in a
+ * The MessageService can be used to encrypt and decrypt messages provided in a
  * MessageItem. A Message will be encrypted with the public key of the receifer
  * and decrypted with the local private key.
  * 
+ * The values of the message body and message comment are expected in Base64
+ * encoded string format.
  * 
- * Encrypted Messages will be base64 encoded
+ * Encrypted Messages will be returned base64 encoded
  * 
  * @author rsoika
  * 
@@ -102,7 +104,7 @@ public class MessageService {
 						+ encryptedMessage.getDigest());
 
 				return Response.status(Response.Status.OK)
-						.type(MediaType.APPLICATION_JSON).entity(message)
+						.type(MediaType.APPLICATION_JSON).entity(encryptedMessage)
 						.build();
 			}
 
@@ -166,11 +168,11 @@ public class MessageService {
 			logger.info("[MessageService] decrypting message from '"
 					+ message.getSender() + "'");
 
-//			byte[] data = Base64Coder.decode(message.getMessage());
-//
-//			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
-//					sessionId);
-//			message.setMessage(new String(decrypted, ENCODING));
+			// byte[] data = Base64Coder.decode(message.getMessage());
+			//
+			// byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
+			// sessionId);
+			// message.setMessage(new String(decrypted, ENCODING));
 
 			logger.info("decrypted=" + message.getMessage());
 		} catch (Exception e) {

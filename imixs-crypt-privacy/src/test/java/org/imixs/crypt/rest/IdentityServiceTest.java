@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.ws.rs.core.MediaType;
 
+import org.imixs.crypt.util.Base64Coder;
 import org.imixs.crypt.util.RestClient;
 import org.junit.After;
 import org.junit.Assert;
@@ -73,7 +74,7 @@ public class IdentityServiceTest {
 
 		// generate new key by opening a session with a password
 		String uri = HOST + "/rest/identities";
-		String value = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + PASSWORD+ "\"}";
+		String value = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + Base64Coder.encodeString(PASSWORD)+ "\"}";
 		try { 
 			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.post(uri, value);
@@ -163,7 +164,7 @@ public class IdentityServiceTest {
 		// test default identity
 		String uri = HOST + "/rest/identities/"+IDENTITY;
 		try {
-			restClient.setMediaType(MediaType.TEXT_PLAIN);
+			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.get(uri);
 
 			String sContent = restClient.getContent();

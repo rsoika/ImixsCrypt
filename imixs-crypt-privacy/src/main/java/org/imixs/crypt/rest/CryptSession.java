@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -43,21 +42,22 @@ import org.imixs.crypt.util.Base64Coder;
 import org.imixs.crypt.xml.MessageItem;
 
 /**
- * The CryptSession is used by the SessionService as a singelton instance. The
- * class provides methods to read and generate keypairs.
+ * The CryptSession is used by the REST API to manage keys and encrypt/decrypt
+ * messages. The class provides methods to generate a new keypair and store/read
+ * public keys.
  * 
  * The CryptSession makes use of the property file 'imixs.properties' containing
  * path settings for the local key store.
  * 
- * The CryptSession instantiates keyUtil Implementation for key the management
+ * The CryptSession instantiates a KeyUtil Implementation for the key management
  * and encryption. The KeyUtil can be configured by the imixs.properties file.
+ * 
+ * The CryptSession is a singelton.
  * 
  * @author rsoika
  * @version 1.0.0
  */
 class CryptSession {
-
-	private String ENCODING = "UTF-8";
 	public static String IMIXS_PROPERTY_FILE = "imixs.properties";
 
 	public static String PROPERTY_KEY_UTIL = "keyutil";
@@ -367,21 +367,18 @@ class CryptSession {
 		PublicKey publicKey = this.getLocalPublicKey(message.getRecipient());
 
 		// encrypt comment
-		try {
-			encrypted = keyUtil.encrypt(
-					message.getComment().getBytes(ENCODING), publicKey);
 
-			encryptedMessage.setComment(Base64Coder.encodeString(new String(
-					encrypted)));
+		encrypted = keyUtil.encrypt(Base64Coder.decode(message.getComment()),
+				publicKey);
 
-			// encrypt message
-			encrypted = keyUtil.encrypt(message.getMessage().getBytes(ENCODING),
-					publicKey);
-			encryptedMessage.setMessage(Base64Coder.encodeString(new String(
-					encrypted)));
-		} catch (UnsupportedEncodingException e) {
-			throw new ImixsCryptException(ImixsCryptException.UNSUPPORTED_ENCODING, e);
-		}
+		encryptedMessage.setComment(Base64Coder.encodeString(new String(
+				encrypted)));
+
+		// encrypt message
+		encrypted = keyUtil.encrypt(Base64Coder.decode(message.getMessage()),
+				publicKey);
+		encryptedMessage.setMessage(Base64Coder.encodeString(new String(
+				encrypted)));
 
 		// sign message
 		// @TODO

@@ -105,7 +105,10 @@ public class MessageItem implements java.io.Serializable {
 	}
 
 	public String getDigest() {
-		return digest;
+		// @ToDo need to be computed with real digest
+		String s=comment+message;
+		return ""+s.hashCode();
+		//return digest;
 	}
 
 	public void setDigest(String digest) {

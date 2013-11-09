@@ -35,6 +35,7 @@ ImixsCrypt Private Server
 } 
 +-------------------+ 
  
+ The value 'key' is always Base64 encoded. 
  
 **MessageItem
 ~~~~~~~~~~~~~~ 
@@ -49,6 +50,7 @@ ImixsCrypt Private Server
 } 
 +-------------------+  
 
+ The values 'message', 'comment' and 'signature' are always Base64 encoded. 
 
 **AuhtItem
 ~~~~~~~~~~~~~~ 

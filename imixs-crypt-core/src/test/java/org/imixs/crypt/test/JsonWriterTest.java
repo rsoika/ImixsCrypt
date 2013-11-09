@@ -63,17 +63,16 @@ public class JsonWriterTest {
 			String jsonContent = readFile(FILE_PATH);
 
 			logger.info(jsonContent);
-			
-			Assert.assertTrue(jsonContent.contains("{\"id\":\"test\",\"key\":\"mykey\"}"));
+
+			Assert.assertTrue(jsonContent.contains("\"id\":\"test\""));
+			Assert.assertTrue(jsonContent.contains("\"key\":\"mykey\""));
+
 		} catch (IOException e) {
 			Assert.fail();
 			e.printStackTrace();
 		}
 	}
-	
-	
-	
-	
+
 	/**
 	 * Test filewriter
 	 */
@@ -83,26 +82,15 @@ public class JsonWriterTest {
 
 		message.setMessage("TEST DATA");
 
-		
-			String jsonContent =	JSONWriter.toString(message);
+		String jsonContent = JSONWriter.toString(message);
 
-			// test content of new file...
-			
-			logger.info(jsonContent);
-			
-			Assert.assertTrue(jsonContent.contains("\"message\":\"TEST DATA\""));
-	
+		// test content of new file...
+
+		logger.info(jsonContent);
+
+		Assert.assertTrue(jsonContent.contains("\"message\":\"TEST DATA\""));
+
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 	private String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));

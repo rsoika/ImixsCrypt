@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
+import javax.json.stream.JsonGeneratorFactory;
 
 import org.imixs.crypt.xml.IdentityItem;
 import org.imixs.crypt.xml.MessageItem;
@@ -103,10 +107,20 @@ public class JSONWriter {
 
 	public static String toString(IdentityItem identityItem) {
 		StringWriter writer = new StringWriter();
-		JsonGenerator generator = Json.createGenerator(writer);
+		
+		
+		Map map=new HashMap<>();
+		map.put(JsonGenerator.PRETTY_PRINTING, true);
+		
+	    JsonGeneratorFactory jgf = Json.createGeneratorFactory(map);
+	    JsonGenerator generator = jgf.createGenerator(writer);
+		
+		
+		
+		//JsonGenerator generator = Json.createGenerator(writer);
 
 		generator.writeStartObject();
-
+		
 		if (identityItem.getId() != null)
 			generator.write("id", identityItem.getId());
 

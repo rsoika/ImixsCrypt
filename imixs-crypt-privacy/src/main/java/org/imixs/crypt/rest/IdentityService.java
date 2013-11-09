@@ -49,6 +49,8 @@ import org.imixs.crypt.xml.IdentityItem;
  * password creates a new sessionId. The sessionId is stored in the cookie
  * ImixsCryptSessionID.
  * 
+ * Key values are are always Base64 encoded.
+ * 
  * @author rsoika
  * 
  */
@@ -96,7 +98,7 @@ public class IdentityService {
 
 			try {
 				CryptSession.getInstance().openSession(identity.getId(),
-						identity.getKey());
+					Base64Coder.decodeString(identity.getKey()));
 
 				// verify if a key pair exists
 				publicKey = CryptSession.getInstance().getLocalPublicKey(

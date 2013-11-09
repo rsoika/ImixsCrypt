@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test class for imixs-jax-rs workflow rest api
+ * Test class to exchange messages with a public ImixsCrypt Server node.
  * 
  * The test class test encryption and decryption
  * 
