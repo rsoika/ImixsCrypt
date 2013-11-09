@@ -95,8 +95,9 @@ ImixsCrypt Private Server
  decrypt messages using a locak RSA private and public key.
  
  
-**SessionService 
+**IdentityService 
 ~~~~~~~~~~~~~~
+ The IdentityService provides methods the manage public keys and local private key pairs.
  To work with a local private RSA key which is password protected a client need to first
  start a new session. To open a new session for a specific identity a client post the private key password. 
  After a session was created a sessionId is stored in a cookie. A client can encrypt or decrypt messages 
@@ -125,45 +126,37 @@ ImixsCrypt Private Server
 |                     |          |\{"id":"robin.hood@sherwood.forest","key": ""\} |
 *---------------------+----------+---------------------------------------+
  
- All methods receive or return a IdentityItem in JSON format.
+ All methods receive or return a IdentityItem in JSON format. The key value is always Base64 encoded.
  
  The POST method automatically updates the property "default.identity" with the 
  identity provided in the request. 
    
  
- 
-
-**IdentityService 
-~~~~~~~~~~~~~~
- The IdentityService is used to manage public keys. 
-  
-*---------------------*----------*------------------------------------------* 
-|| Resource URI       || Method  || Description                            ||
-*---------------------+----------+------------------------------------------+
-| /identities/(id)	  |GET       |Returns the public key of the specified identity|
-|                     |          |A public key is stored locally in the /key/public/ direcotry|
-*---------------------+----------+------------------------------------------+
-| /identities?node=http://...	  |POST      |Posts a public key to a public internt server|
-|                     |          |											|
-*---------------------+----------+---------------------------------------+
- 
 
 
 **MessageService 
 ~~~~~~~~~~~~~~
- The MessageService is used to encrypt messages and 
- send them through the internet. 
+ The MessageService is used to encrypt messages locally and 
+ send encrypted messages through the Internet. 
   
 *---------------------*----------*------------------------------------------* 
 || Resource URI       || Method  || Description                            ||
 *---------------------+----------+------------------------------------------+
-| /messages/		  |GET       |Returns a list with local messages		|
+| /messages		      |POST     |Posts a new message. The message will be encrypted  		|
+|                     |          |with the receifers public key. If no receifer is defined|
+|                     |          |the encrypted message will be stored locally|
+*---------------------+----------+------------------------------------------+
+| /messages?node=xx	  |POST      |Posts a new message to a remote public node.   		|
+|                     |          |The message will be encrypted with the receifers public key|
+|                     |          |and transfered to the public node|
+*---------------------+----------+------------------------------------------+
+| /messages	  		  |GET       |Returns a list with local message headers	|
+|                     |          |a message header only contains sender, receifer and signature|
+|		   			  |	         |The message need to be get by its message digest		|
 |                     |          |											|
 *---------------------+----------+------------------------------------------+
-| /messages?node=http://...	  |POST      |Posts a message. If the message did not contain a |
-|                     |          |receifer than the message is encrypted localy with the local public key	|
-|                     |          |To send a message over the Internet a query param |
-|                     |          |'node' should be provided|
+| /messages/[DIGEST]  |GET       |Returns a decrypted message for the given message|
+|                     |          |message digest|
 |                     |          |											|
 *---------------------+----------+---------------------------------------+
  

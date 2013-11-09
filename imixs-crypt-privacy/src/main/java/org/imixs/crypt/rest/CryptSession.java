@@ -381,9 +381,45 @@ class CryptSession {
 				encrypted)));
 
 		// sign message
-		// @TODO
+
+		encryptedMessage = sign(encryptedMessage);
 
 		return encryptedMessage;
+	}
+
+	/**
+	 * This method signd a messate witht a private key and generates a message
+	 * digest
+	 * 
+	 * @param message
+	 * @return
+	 * @throws ImixsCryptException
+	 */
+	private MessageItem sign(MessageItem message) throws ImixsCryptException {
+		PrivateKey privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"
+				+ getIdentity(), password);
+
+		// dummy method....
+		// @TODO- need implementation
+		// @ToDo need to be computed with real digest
+		String s = "";
+		if (message.getComment() != null)
+			s = s + message.getComment();
+		if (message.getMessage() != null)
+			s = s + message.getMessage();
+
+		if (message.getRecipient() != null)
+			s = s + message.getRecipient();
+		if (message.getSender() != null)
+			s = s + message.getSender();
+		
+		if (message.getCreated() >0)
+			s = s + message.getCreated();
+
+		
+		message.setDigest("" + s.hashCode());
+		message.setSignature("Sig:" + s.hashCode());
+		return message;
 	}
 
 	/**

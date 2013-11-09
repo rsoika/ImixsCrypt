@@ -25,8 +25,12 @@
 
 package org.imixs.crypt.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
@@ -43,6 +47,7 @@ import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.MessageItem;
+import org.imixs.crypt.xml.NoteItem;
 
 /**
  * The MessageService can be used to encrypt and decrypt messages provided in a
@@ -104,8 +109,8 @@ public class MessageService {
 						+ encryptedMessage.getDigest());
 
 				return Response.status(Response.Status.OK)
-						.type(MediaType.APPLICATION_JSON).entity(encryptedMessage)
-						.build();
+						.type(MediaType.APPLICATION_JSON)
+						.entity(encryptedMessage).build();
 			}
 
 			// No local message so we need to send it over the internet.....
@@ -142,6 +147,38 @@ public class MessageService {
 		return Response.status(Response.Status.OK)
 				.type(MediaType.APPLICATION_JSON).entity(message).build();
 
+	}
+
+	/**
+	 * This method returns a list with all available local message headers
+	 * 
+	 * 
+	 */
+	@GET
+	@Path("/")
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<MessageItem> getNotes(
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
+
+		if (!CryptSession.getInstance().isValidSession(sessionId))
+			return null;
+
+		File folder = new File(CryptSession.getRootPath() + "data/notes");
+		File[] listOfFiles = folder.listFiles();
+
+		// read local files
+		List<MessageItem> result = new ArrayList<>();
+		for (File file : listOfFiles) {
+			Long lastModified = file.lastModified();
+			String name = file.getName();
+
+			MessageItem note = new MessageItem();
+			note.setCreated(new Date(lastModified).getTime());
+			note.setDigest(name);
+			result.add(note);
+		}
+
+		return result;
 	}
 
 	/**
