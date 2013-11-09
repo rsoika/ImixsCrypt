@@ -56,7 +56,7 @@ public class IdentityServiceTest {
 	@Test
 	public void testGenerationOfKeyPair() {
 		RestClient restClient = new RestClient();
- 
+  
 		// first check to delete a key pair.
 		File keyFile = new File("src/test/resources/keys/"+IDENTITY);
 		if (keyFile.exists())

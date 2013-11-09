@@ -22,7 +22,7 @@
  */
 
 var pageSections = [ 'welcome_id', 'start_id', 'login_id', 'workspace_id' ];
-var publicKey = null;
+var myIdentity = null;
 /*
  * Toggle the current page section
  */
@@ -46,13 +46,13 @@ function togglePage(section) {
 function initImixsCrypt() {
 
 	// get public key....
-	$.getJSON("/rest/session/", function(data) {
+	$.getJSON("/rest/identities", function(data) {
 		console.log("success");
 		if (data.key == null) {
 			// key is not available so show start screen
 			togglePage('welcome_id');
 		} else {
-			publicKey = data;
+			myIdentity = data;
 			// public key is availalbe so start login
 			togglePage('login_id');
 		}
@@ -65,6 +65,9 @@ function initImixsCrypt() {
 	});
 
 }
+
+
+
 
 /*
  * This method verifies the password input and starts a key generation
@@ -95,18 +98,20 @@ function createKey() {
 	$("#start_id #password_id2").prop('disabled', true);
 	$("#start_id #email_id").prop('disabled', true);
 
+	// reinialize identity
+	var jsonData='{"id":"'+email + '","key":"'+btoa(password1) + '"}';
 	// start session Sending password
 	var saveData = $.ajax({
 		type : 'POST',
-		dataType : "text",
+		dataType : "json",
 		processData : false,
-		contentType : 'text/plain',
-		url : "/rest/session/" + email,
-		data : password1,
+		contentType : 'application/json',
+		url : "/rest/identities" ,
+		data : jsonData,
 		success : function(resultData) {
 			// publicKey = resultData;
 
-			publicKey = jQuery.parseJSON(resultData);
+			myIdentity = resultData;
 			// key generated and session enabled - switch to workspace
 			togglePage('workspace_id');
 		}
@@ -117,6 +122,8 @@ function createKey() {
 
 }
 
+
+
 /*
  * This method posts the password and creates a new session
  */
@@ -125,17 +132,18 @@ function login() {
 	$("#password_id").prop('disabled', true);
 	// get password
 	var password = $("#password_id").val();
+	var jsonData='{"key":"'+btoa(password) + '"}';
 
 	// open session and Sending password
 	var saveData = $.ajax({
 		type : 'POST',
-		dataType : "text",
+		dataType : "json",
 		processData : false,
-		contentType : 'text/plain',
-		url : "/rest/session/" + publicKey.user,
-		data : password,
+		contentType : 'application/json',
+		url : "/rest/identities",
+		data : jsonData,
 		success : function(resultData) {
-			publicKey = jQuery.parseJSON(resultData);
+			myIdentity = resultData;
 			// read notes
 			readNotes();
 			// Login successful and session started - switch to workspace
@@ -169,7 +177,7 @@ function updateChat() {
 		type : 'GET',
 		dataType : "text",
 		processData : false,
-		contentType : 'text/plain',
+		contentType : 'application/json',
 		url : "/rest/session/properties/default.public.node",
 		success : function(resultData) {
 			// alert(resultData);
@@ -197,7 +205,7 @@ function savePublicNode(servernode) {
 		type : 'POST',
 		dataType : "text",
 		processData : false,
-		contentType : 'text/plain',
+		contentType : 'application/json',
 		url : "/rest/session/properties/default.public.node",
 		data : servernode,
 		success : function(resultData) {
