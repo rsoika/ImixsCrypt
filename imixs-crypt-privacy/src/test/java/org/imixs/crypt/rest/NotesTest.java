@@ -33,8 +33,8 @@ public class NotesTest {
 	public void setup() {
 		RestClient restClient = new RestClient();
 		String uri = HOST + "/rest/identities";
-		String json = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + Base64Coder.encodeString(PASSWORD)
-				+ "\"}";
+		String json = "{\"id\":\"" + IDENTITY + "\",\"key\":\""
+				+ Base64Coder.encodeString(PASSWORD) + "\"}";
 		try {
 			restClient.setMediaType(MediaType.APPLICATION_JSON);
 			int httpResult = restClient.post(uri, json);
@@ -57,6 +57,7 @@ public class NotesTest {
 	@Test
 	public void testPostNote() {
 
+		String digest = null;
 		RestClient restClient = new RestClient();
 		restClient.setCookies(cookieManager);
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
@@ -72,7 +73,7 @@ public class NotesTest {
 		message.setSender("");
 		message.setSignature("");
 		// create json string....
-		String json = JSONWriter.toString(message);
+		String json = JSONWriter.messageItemToString(message);
 
 		try {
 			int httpResult = restClient.post(uri, json);
@@ -83,9 +84,18 @@ public class NotesTest {
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 
-			// read message list - current message digest should be contained
+			// extract digest
+			if (sContent.contains("\"digest\":")) {
+				int pos = sContent.indexOf("\"digest\":");
+				digest = sContent.substring(pos + 10,
+						sContent.indexOf("\"", pos + 11));
+				System.out.println("Digest=" + digest);
+			}
 
-			uri = HOST + "/rest/messages";
+			Assert.assertNotNull(digest);
+
+			// read message with digest
+			uri = HOST + "/rest/messages/" + digest;
 			String result = null;
 
 			// set session cookie
@@ -98,7 +108,14 @@ public class NotesTest {
 			// expected result 200
 			Assert.assertEquals(200, httpResult);
 
-		
+			// message should contain digest...
+			Assert.assertTrue(sContent.contains(digest));
+
+			// Read Json String
+			MessageItem resultMessage = JSONWriter.stringToMessageItem(result);
+
+			Assert.assertEquals(Base64Coder.encodeString("Hallo Welt"),
+					resultMessage.getMessage());
 
 		} catch (Exception e) {
 

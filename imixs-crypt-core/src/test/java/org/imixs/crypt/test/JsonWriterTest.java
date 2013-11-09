@@ -23,7 +23,7 @@ import org.junit.Test;
  */
 public class JsonWriterTest {
 
-	static final String FILE_PATH = "src/test/resources/json/identitytest.json";
+	static final String FILE_PATH = "src/test/resources/json/";
 
 	private final static Logger logger = Logger.getLogger(JsonWriterTest.class
 			.getName());
@@ -33,7 +33,7 @@ public class JsonWriterTest {
 	@Before
 	public void setup() {
 		// first check to delete test file
-		File keyFile = new File(FILE_PATH);
+		File keyFile = new File(FILE_PATH+"identitytest.json");
 		if (keyFile.exists())
 			keyFile.delete();
 	}
@@ -57,10 +57,10 @@ public class JsonWriterTest {
 		identity.setKey("mykey");
 
 		try {
-			JSONWriter.writeFile(identity, FILE_PATH);
+			JSONWriter.writeFile(identity, FILE_PATH+"identitytest.json");
 
 			// test content of new file...
-			String jsonContent = readFile(FILE_PATH);
+			String jsonContent = readFile(FILE_PATH+"identitytest.json");
 
 			logger.info(jsonContent);
 
@@ -74,15 +74,15 @@ public class JsonWriterTest {
 	}
 
 	/**
-	 * Test filewriter
+	 * Test stringwriter
 	 */
 	@Test
-	public void writeMessageToFile() {
+	public void writeMessageToString() {
 		MessageItem message = new MessageItem();
 
 		message.setMessage("TEST DATA");
 
-		String jsonContent = JSONWriter.toString(message);
+		String jsonContent = JSONWriter.messageItemToString(message);
 
 		// test content of new file...
 
@@ -92,6 +92,36 @@ public class JsonWriterTest {
 
 	}
 
+	
+	
+	
+	/**
+	 * Test filw writer
+	 */
+	@Test
+	public void writeMessageToFile() {
+		MessageItem message = new MessageItem();
+
+		message.setMessage("TEST DATA");
+		message.setSender("robin.hood@sherwood.forest");
+		message.setRecipient("little.john@sherwood.forest");
+		try {
+			JSONWriter.writeFile(message, FILE_PATH+"messagetest.json");
+		} catch (IOException e) {
+		
+			e.printStackTrace();
+			Assert.fail();
+		}
+	
+		
+		// test content of new file...
+		message=JSONWriter.readMessageFromFile( FILE_PATH+"messagetest.json");
+		Assert.assertEquals("TEST DATA",message.getMessage());
+
+	}
+
+	
+	
 	private String readFile(String file) throws IOException {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = null;

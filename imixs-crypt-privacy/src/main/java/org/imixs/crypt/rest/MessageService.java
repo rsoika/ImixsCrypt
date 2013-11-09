@@ -47,17 +47,15 @@ import org.imixs.crypt.ImixsCryptException;
 import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.MessageItem;
-import org.imixs.crypt.xml.NoteItem;
 
 /**
  * The MessageService can be used to encrypt and decrypt messages provided in a
- * MessageItem. A Message will be encrypted with the public key of the receifer
+ * MessageItem. A Message will be encrypted with the public key of the receiver
  * and decrypted with the local private key.
  * 
  * The values of the message body and message comment are expected in Base64
- * encoded string format.
- * 
- * Encrypted Messages will be returned base64 encoded
+ * encoded string format. Encrypted Messages will be returned also Base64
+ * encoded
  * 
  * @author rsoika
  * 
@@ -65,7 +63,6 @@ import org.imixs.crypt.xml.NoteItem;
 @Path("/rest/messages")
 public class MessageService {
 
-	private String ENCODING = "UTF-8";
 
 	private final static Logger logger = Logger.getLogger(MessageService.class
 			.getName());
@@ -157,7 +154,7 @@ public class MessageService {
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)
-	public List<MessageItem> getNotes(
+	public List<MessageItem> getLocalMessages(
 			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		if (!CryptSession.getInstance().isValidSession(sessionId))
@@ -182,45 +179,41 @@ public class MessageService {
 	}
 
 	/**
-	 * This method gets a message by its id
+	 * This method gets a message by its message digest
 	 * 
 	 * @param MessageItem
 	 * 
 	 */
 	@GET
-	@Path("/{name}")
+	@Path("/{digest}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response putDecrypt(MessageItem message,
-			@PathParam("name") String name,
+	public Response getMessageByDigest(@PathParam("digest") String digest,
 			@CookieParam(value = "ImixsCryptSessionID") String sessionId) {
 
 		// validate key
-		if (message == null) {
+		if (digest == null || digest.isEmpty()) {
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(message).build();
+					.type(MediaType.APPLICATION_JSON).build();
 		}
 
-		// find the users public key....
+		MessageItem encryptedMessage = JSONWriter
+				.readMessageFromFile(CryptSession.getInstance().getRootPath()
+						+ "data/notes/" + digest);
+
+		// encrypt message
+		MessageItem decryptedMessage;
 		try {
-			logger.info("[MessageService] decrypting message from '"
-					+ message.getSender() + "'");
-
-			// byte[] data = Base64Coder.decode(message.getMessage());
-			//
-			// byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
-			// sessionId);
-			// message.setMessage(new String(decrypted, ENCODING));
-
-			logger.info("decrypted=" + message.getMessage());
-		} catch (Exception e) {
-
+			decryptedMessage = CryptSession.getInstance().decrypt(
+					encryptedMessage, sessionId);
+		} catch (ImixsCryptException e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(message).build();
-
+					.type(MediaType.APPLICATION_JSON).build();
 		}
+
 		// success HTTP 200
-		return Response.ok(message, MediaType.APPLICATION_JSON).build();
+		return Response.ok(decryptedMessage, MediaType.APPLICATION_JSON)
+				.build();
 
 	}
 

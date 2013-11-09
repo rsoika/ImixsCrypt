@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -58,6 +59,8 @@ import org.imixs.crypt.xml.MessageItem;
  * @version 1.0.0
  */
 class CryptSession {
+
+	private String ENCODING = "UTF-8";
 	public static String IMIXS_PROPERTY_FILE = "imixs.properties";
 
 	public static String PROPERTY_KEY_UTIL = "keyutil";
@@ -153,6 +156,31 @@ class CryptSession {
 	}
 
 	/**
+	 * generates a new key pair for the current identity with the current
+	 * password.
+	 * 
+	 * @throws Exception
+	 */
+	protected PublicKey generateKeyPair() throws Exception {
+		if (getSessionId() == null) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			return null;
+		}
+
+		logger.info("[CryptSession] generate new keypair....");
+
+		PublicKey publicKey = keyUtil.generateKeyPair(getRootPath() + "keys/"
+				+ getIdentity(), getRootPath() + "keys/" + getIdentity()
+				+ ".pub", password);
+
+		// update default identity
+		properties.setProperty(PROPERTY_DEFAULT_IDENTITY, getIdentity());
+		saveProperties();
+
+		return publicKey;
+	}
+
+	/**
 	 * Creates a new session for the given identity. The method stores the
 	 * private key password and generates a SessionId. The sessionId is used for
 	 * further authentication. If no id is provided the method reads the default
@@ -230,31 +258,6 @@ class CryptSession {
 		if (getSessionId() == null || aSessionID == null)
 			return false;
 		return getSessionId().equals(aSessionID);
-	}
-
-	/**
-	 * generates a new key pair for the current identity with the current
-	 * password.
-	 * 
-	 * @throws Exception
-	 */
-	protected PublicKey generateKeyPair() throws Exception {
-		if (getSessionId() == null) {
-			logger.warning("[CryptSession] invalid sessionId!");
-			return null;
-		}
-
-		logger.info("[CryptSession] generate new keypair....");
-
-		PublicKey publicKey = keyUtil.generateKeyPair(getRootPath() + "keys/"
-				+ getIdentity(), getRootPath() + "keys/" + getIdentity()
-				+ ".pub", password);
-
-		// update default identity
-		properties.setProperty(PROPERTY_DEFAULT_IDENTITY, getIdentity());
-		saveProperties();
-
-		return publicKey;
 	}
 
 	/**
@@ -365,26 +368,96 @@ class CryptSession {
 
 		// get public key of recipient
 		PublicKey publicKey = this.getLocalPublicKey(message.getRecipient());
+		try {
 
-		// encrypt comment
+			// encrypt comment
+			if (message.getComment() != null && !message.getComment().isEmpty()) {
+				encrypted = keyUtil.encrypt(
+						message.getComment().getBytes(ENCODING), publicKey);
+				encryptedMessage.setComment(new String(Base64Coder
+						.encode(encrypted)));
+			}
 
-		encrypted = keyUtil.encrypt(Base64Coder.decode(message.getComment()),
-				publicKey);
+			// encrypt message
+			if (message.getMessage() != null && !message.getMessage().isEmpty()) {
+				encrypted = keyUtil.encrypt(
+						message.getMessage().getBytes(ENCODING), publicKey);
+				encryptedMessage.setMessage(new String(Base64Coder
+						.encode(encrypted)));
+				logger.fine("[CryptSession] Encrypted Message Text="
+						+ encryptedMessage.getMessage());
+			}
 
-		encryptedMessage.setComment(Base64Coder.encodeString(new String(
-				encrypted)));
-
-		// encrypt message
-		encrypted = keyUtil.encrypt(Base64Coder.decode(message.getMessage()),
-				publicKey);
-		encryptedMessage.setMessage(Base64Coder.encodeString(new String(
-				encrypted)));
+		} catch (UnsupportedEncodingException e) {
+			throw new ImixsCryptException(
+					ImixsCryptException.UNSUPPORTED_ENCODING, e);
+		}
 
 		// sign message
 
 		encryptedMessage = sign(encryptedMessage);
 
 		return encryptedMessage;
+	}
+
+	/**
+	 * This method decrypt a MessageItem with the local private key and returns
+	 * a new MessageItem with the decrypted and verified data.
+	 * 
+	 * @param message
+	 * @param aUserID
+	 * @param asessionId
+	 * @return
+	 * @throws ImixsCryptException
+	 */
+	protected MessageItem decrypt(MessageItem message, String asessionId)
+			throws ImixsCryptException {
+		byte[] decrypted = null;
+
+		// validate session
+		if (!isValidSession(asessionId)) {
+			logger.warning("[CryptSession] invalid sessionId!");
+			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
+					"Invalid SessionID: " + asessionId);
+
+		}
+
+		PrivateKey privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"
+				+ getIdentity(), password);
+
+		MessageItem decryptedMessage = new MessageItem();
+		decryptedMessage.setRecipient(message.getRecipient());
+		decryptedMessage.setSender(message.getSender());
+
+		// encrypt comment
+		if (message.getComment() != null && !message.getComment().isEmpty()) {
+			decrypted = keyUtil.decrypt(
+					Base64Coder.decode(message.getComment()), privateKey);
+			decryptedMessage.setComment(new String(decrypted));
+		}
+
+		// encrypt message
+		if (message.getMessage() != null && !message.getMessage().isEmpty()) {
+
+			logger.fine("[CryptSession] Decrypt encrypted Message Text="
+					+ message.getMessage());
+			decrypted = keyUtil.decrypt(
+					Base64Coder.decode(message.getMessage()), privateKey);
+			decryptedMessage.setMessage(new String(decrypted));
+		}
+		// sign message
+
+		decryptedMessage = verify(decryptedMessage);
+
+		return decryptedMessage;
+	}
+
+	/*
+	 * todo - implenetation!
+	 */
+	private MessageItem verify(MessageItem message) {
+		logger.warning("[CryptSession] verify message not implemented!");
+		return message;
 	}
 
 	/**
@@ -398,6 +471,7 @@ class CryptSession {
 	private MessageItem sign(MessageItem message) throws ImixsCryptException {
 		PrivateKey privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"
 				+ getIdentity(), password);
+		logger.warning("[CryptSession] sign message not implemented!");
 
 		// dummy method....
 		// @TODO- need implementation
@@ -412,105 +486,13 @@ class CryptSession {
 			s = s + message.getRecipient();
 		if (message.getSender() != null)
 			s = s + message.getSender();
-		
-		if (message.getCreated() >0)
+
+		if (message.getCreated() > 0)
 			s = s + message.getCreated();
 
-		
 		message.setDigest("" + s.hashCode());
 		message.setSignature("Sig:" + s.hashCode());
 		return message;
-	}
-
-	/**
-	 * Encrypts a message String with a public key. The encrypted byte array
-	 * will be returned Base64 encoded.
-	 * 
-	 * 
-	 * @param message
-	 * @return
-	 * @throws ImixsCryptException
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 */
-	private byte[] ecrypt(byte[] data, String aUserID, String asessionId)
-			throws ImixsCryptException {
-		if (!isValidSession(asessionId)) {
-			logger.warning("[CryptSession] invalid sessionId!");
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
-					"Invalid SessionID: " + asessionId);
-
-		}
-
-		try {
-			PublicKey publicKey = this.getPublicKey(aUserID, asessionId);
-			return keyUtil.encrypt(data, publicKey);
-		} catch (ImixsCryptException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * Encrypts a message String with the local public key. The encrypted byte
-	 * array will be returned Base64 encoded.
-	 * 
-	 * 
-	 * @param message
-	 * @return
-	 * @throws ImixsCryptException
-	 * @throws IOException
-	 * @throws InvalidKeySpecException
-	 */
-	private byte[] ecryptLocal(byte[] data, String asessionId)
-			throws ImixsCryptException {
-
-		if (!isValidSession(asessionId)) {
-			logger.warning("[CryptSession] invalid sessionId!");
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
-					"Invalid SessionID: " + asessionId);
-
-		}
-		try {
-			// get the local public key
-			PublicKey publicKey = this.getLocalPublicKey(null);
-			return keyUtil.encrypt(data, publicKey);
-		} catch (ImixsCryptException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	/**
-	 * Decrypts a message with the local private key. The encrypted message is
-	 * 
-	 * @param message
-	 * @return
-	 * @throws ImixsCryptException
-	 */
-	private byte[] decryptLocal(byte[] encryptedData, String asessionId)
-			throws ImixsCryptException {
-
-		PrivateKey privateKey;
-
-		if (!isValidSession(asessionId)) {
-			logger.warning("[CryptSession] invalid sessionId!");
-			throw new ImixsCryptException(ImixsCryptException.INVALID_KEY,
-					"Invalid SessionID: " + asessionId);
-		}
-		try {
-			privateKey = keyUtil.getPrivateKey(getRootPath() + "keys/"
-					+ getIdentity(), password);
-
-			return keyUtil.decrypt(encryptedData, privateKey);
-
-		} catch (ImixsCryptException e) {
-			logger.warning("[CryptSession] " + e.getMessage());
-			e.printStackTrace();
-			return null;
-		}
 	}
 
 	/**
