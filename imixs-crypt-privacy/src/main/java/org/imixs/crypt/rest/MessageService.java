@@ -63,7 +63,6 @@ import org.imixs.crypt.xml.MessageItem;
 @Path("/rest/messages")
 public class MessageService {
 
-
 	private final static Logger logger = Logger.getLogger(MessageService.class
 			.getName());
 
@@ -149,6 +148,8 @@ public class MessageService {
 	/**
 	 * This method returns a list with all available local message headers
 	 * 
+	 * The 'message' property will be removed from the returned messageItem. The
+	 * 'comment' property will be decrypted.
 	 * 
 	 */
 	@GET
@@ -169,10 +170,27 @@ public class MessageService {
 			Long lastModified = file.lastModified();
 			String name = file.getName();
 
-			MessageItem note = new MessageItem();
-			note.setCreated(new Date(lastModified).getTime());
-			note.setDigest(name);
-			result.add(note);
+			// create encrypted MessageItem
+			MessageItem encryptedMessage = JSONWriter.readMessageFromFile(file
+					.getPath());
+			// decrypt message
+			MessageItem decryptedMessage = null;
+			try {
+				decryptedMessage = CryptSession.getInstance().decrypt(
+						encryptedMessage, sessionId);
+				// remove message body
+				decryptedMessage.setMessage(null);
+				// set digest
+				decryptedMessage.setDigest(name);
+			} catch (ImixsCryptException e) {
+				e.printStackTrace();
+				// add null message
+				result.add(encryptedMessage);
+			}
+
+			if (decryptedMessage != null) {
+				result.add(decryptedMessage);
+			}
 		}
 
 		return result;
@@ -200,7 +218,7 @@ public class MessageService {
 				.readMessageFromFile(CryptSession.getInstance().getRootPath()
 						+ "data/notes/" + digest);
 
-		// encrypt message
+		// decrypt message
 		MessageItem decryptedMessage;
 		try {
 			decryptedMessage = CryptSession.getInstance().decrypt(

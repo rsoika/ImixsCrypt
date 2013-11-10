@@ -66,9 +66,6 @@ function initImixsCrypt() {
 
 }
 
-
-
-
 /*
  * This method verifies the password input and starts a key generation
  */
@@ -99,14 +96,14 @@ function createKey() {
 	$("#start_id #email_id").prop('disabled', true);
 
 	// reinialize identity
-	var jsonData='{"id":"'+email + '","key":"'+btoa(password1) + '"}';
+	var jsonData = '{"id":"' + email + '","key":"' + btoa(password1) + '"}';
 	// start session Sending password
 	var saveData = $.ajax({
 		type : 'POST',
 		dataType : "json",
 		processData : false,
 		contentType : 'application/json',
-		url : "/rest/identities" ,
+		url : "/rest/identities",
 		data : jsonData,
 		success : function(resultData) {
 			// publicKey = resultData;
@@ -122,8 +119,6 @@ function createKey() {
 
 }
 
-
-
 /*
  * This method posts the password and creates a new session
  */
@@ -132,7 +127,7 @@ function login() {
 	$("#password_id").prop('disabled', true);
 	// get password
 	var password = $("#password_id").val();
-	var jsonData='{"key":"'+btoa(password) + '"}';
+	var jsonData = '{"key":"' + btoa(password) + '"}';
 
 	// open session and Sending password
 	var saveData = $.ajax({
@@ -220,30 +215,36 @@ function savePublicNode(servernode) {
 }
 
 /**
- * Opens the note editor to edit the note. If not name is given a new note is
- * created. If a name is given a ajax request is started to load the text.
+ * Opens the note editor to edit the note with the given message digest. If not
+ * message digest is given a new empty note is created.
+ * 
+ * If a message digest is given a ajax request is started to load the text.
  */
-function editNote(name) {
+function editNote(digest) {
 
 	$("#workspace_notes #notes_table").hide();
 	$("#workspace_notes #notes_editor").show();
 
 	// load notes per ajax
-	if (name != null) {
+	if (digest != null) {
 		// decrypt data
 		$.ajax({
 			type : 'GET',
-			dataType : "text",
+			dataType : "json",
 			processData : false,
 			contentType : 'application/json',
-			url : "/rest/notes/" + name,
-			success : function(data) {
+			url : "/rest/messages/" + digest,
+			success : function(messageItem) {
 				console.log("success");
 				// alert(data);
-				if (data != null) {
+				if (messageItem != null) {
+					// decode base64 message body....
+					var encodedMessage=messageItem.message;
+					var encodedComment=messageItem.comment;
+					var content=atob(encodedMessage);
 					// fill editor
-					$('#notes_editor textarea.tinymce').html(data);
-					$('#notes_editor #notes_title').val(name);
+					$('#notes_editor textarea.tinymce').html(atob(encodedMessage));
+					$('#notes_editor #notes_title').val(atob(encodedComment));
 
 				} else {
 					// corrupted data
@@ -315,16 +316,21 @@ function saveNote() {
 	var content = $('#notes_editor textarea.tinymce').tinymce().getContent();
 	var name = $('#notes_editor #notes_title').val();
 
+	// encode base64 content and comment
+	// create json data string
+	var jsonData = '{"comment":"' + btoa(name) + '","message":"' + btoa(content)
+			+ '"}';
+
 	// load notes per ajax
 	if (name != null) {
 		// decrypt data
 		$.ajax({
 			type : 'POST',
-			dataType : "text",
+			dataType : "json",
 			processData : false,
 			contentType : 'application/json',
-			data : content,
-			url : "/rest/notes/" + name,
+			data : jsonData,
+			url : "/rest/messages",
 			success : function() {
 				console.log("success");
 				// alert('Encrypted!');
@@ -346,13 +352,13 @@ function closeNote() {
 }
 
 /*
- * Read all notes from the local data directory
+ * Fetches all local notes
  */
 function readNotes() {
 
 	// get note list....
 	$.getJSON(
-			"/rest/notes/",
+			"/rest/messages",
 			function(data) {
 				console.log("success");
 				if (data != null) {
@@ -361,14 +367,17 @@ function readNotes() {
 					tableBody.empty();
 					$.each(data, function(index, value) {
 						var d = new Date();
-						d.setTime(value.modified);
+						d.setTime(value.created);
+						
+						// base64 decode comment string
+						var comment=atob(value.comment);
 
 						var aDelete = "<td><a href='#' onclick=\"deleteNote('"
-								+ value.name + "');\">Delete</a></td>;";
+								+ comment + "');\">Delete</a></td>;";
 
 						var html = $("<tr><td>" + index
 								+ "</td><td><a href='#' onclick=\"editNote('"
-								+ value.name + "');\">" + value.name
+								+ value.digest + "');\">" + comment
 								+ "</a></td><td>" + d + "</td>" + aDelete
 								+ "</tr>");
 						tableBody.append(html);
@@ -425,18 +434,18 @@ function sendMessage() {
  */
 function publishPublicKey() {
 	// post public key
-	//alert(JSON.stringify( publicKey));
-	var jsonData=JSON.stringify( publicKey);
+	// alert(JSON.stringify( publicKey));
+	var jsonData = JSON.stringify(publicKey);
 	$.ajax({
 		type : 'POST',
 		dataType : "json",
 		processData : false,
 		contentType : 'application/json',
-		data :jsonData,
+		data : jsonData,
 		url : "/rest/session/publicnode/",
 		success : function() {
 			console.log("success");
-		//	alert('Public Key published');
+			// alert('Public Key published');
 
 		}
 	});
