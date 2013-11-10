@@ -93,19 +93,18 @@ public class MessageService {
 					.type(MediaType.APPLICATION_JSON).entity(message).build();
 		}
 		try {
-			// encrypt message
-			MessageItem encryptedMessage = CryptSession.getInstance().ecrypt(
-					message, sessionId);
 
 			// if no recipient is define store the message locally
-			if (encryptedMessage.getRecipient() == null
-					|| encryptedMessage.getRecipient().isEmpty()) {
+			if (message.getRecipient() == null
+					|| message.getRecipient().isEmpty()) {
 
+				// encrypt message
+				MessageItem encryptedMessage = CryptSession.getInstance()
+						.ecrypt(message, sessionId);
 				// save data into file
-				JSONWriter.writeFile(encryptedMessage, CryptSession
-						.getInstance().getRootPath()
-						+ "data/local/"
-						+ encryptedMessage.getDigest());
+				JSONWriter.writeFile(encryptedMessage,
+						CryptSession.getRootPath() + "data/local/"
+								+ encryptedMessage.getDigest());
 
 				return Response.status(Response.Status.OK)
 						.type(MediaType.APPLICATION_JSON)
@@ -116,14 +115,16 @@ public class MessageService {
 
 			// test if we have a public key...
 			PublicKey publicKey = CryptSession.getInstance().getPublicKey(
-					encryptedMessage.getRecipient(), sessionId);
+					message.getRecipient(), sessionId);
 
 			if (publicKey == null) {
 				// fetch key from public node....
-				fetchPublicKeyFromPublicServer(encryptedMessage.getRecipient(),
+				fetchPublicKeyFromPublicServer(message.getRecipient(),
 						sessionId);
 			}
-
+			// encrypt message
+			MessageItem encryptedMessage = CryptSession.getInstance()
+					.ecrypt(message, sessionId);
 			logger.info("[MessageService] encrypting message for '"
 					+ encryptedMessage.getRecipient() + "'");
 
@@ -238,16 +239,15 @@ public class MessageService {
 
 	}
 
-	
-	
 	/**
 	 * This method deletes a local messageItem
 	 * 
 	 */
 	@DELETE
 	@Path("/{digest}")
-	public Response deleteMessageByDigest(@PathParam("digest") String digest,
-			@CookieParam(value =  IdentityService.SESSION_COOKIE) String sessionId) {
+	public Response deleteMessageByDigest(
+			@PathParam("digest") String digest,
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
 		// validate digest
 		if (digest == null || digest.isEmpty()) {
@@ -277,9 +277,7 @@ public class MessageService {
 				.type(MediaType.APPLICATION_JSON).build();
 
 	}
-	
-	
-	
+
 	private PublicKey fetchPublicKeyFromPublicServer(String user,
 			String asessionId) throws ImixsCryptException {
 

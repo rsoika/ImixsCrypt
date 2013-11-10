@@ -107,8 +107,6 @@ function createKey() {
 		url : "/rest/identities",
 		data : jsonData,
 		success : function(resultData) {
-			// publicKey = resultData;
-
 			myIdentity = resultData;
 			// key generated and session enabled - switch to workspace
 			togglePage('workspace_id');
@@ -157,9 +155,9 @@ function login() {
  * Updates the worspace profile section
  */
 function updateProfile() {
-	// alert(publicKey.key);
-	$("#workspace_myprofile #publickey_id").val(publicKey.key);
-	$("#workspace_myprofile #email_id").val(publicKey.user);
+	// update profile page data
+	$("#workspace_myprofile #publickey_id").val(myIdentity.key);
+	$("#workspace_myprofile #email_id").val(myIdentity.id);
 
 }
 
@@ -429,25 +427,23 @@ function readNotes() {
  */
 function sendMessage() {
 	var receipient = $('#message_editor #receipient_id').val();
-	// alert(receipient);
-
 	var content = $('#message_editor textarea.tinymce').tinymce().getContent();
 
 	// alert(content);
 
-	// var jsonData="{\"user\":\"" + receipient + "\",\"message\":\"" + content
-	// + "\"}";
+	var jsonData = "{\"recipient\":\"" + receipient + "\",\"message\":\""
+			+ btoa(content) + "\"}";
 	// alert(jsonData);
 	// load notes per ajax
 	if (content != null) {
 		// decrypt data
 		$.ajax({
 			type : 'POST',
-			dataType : "text",
+			dataType : "json",
 			processData : false,
 			contentType : 'application/json',
-			data : content,
-			url : "/rest/message/" + receipient,
+			data : jsonData,
+			url : "/rest/messages",
 			success : function() {
 				console.log("success");
 				alert('Encrypted message send!');
