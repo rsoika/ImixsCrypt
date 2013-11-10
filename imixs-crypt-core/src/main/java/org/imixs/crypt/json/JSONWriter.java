@@ -17,6 +17,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonString;
+import javax.json.JsonValue.ValueType;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 
@@ -158,10 +159,20 @@ public class JSONWriter {
 
 		if (jsonMessage.containsKey("created") && !jsonMessage.isNull("created")
 				&& jsonMessage.getInt("created") != 0) {
-			jsonString = jsonMessage.getJsonString("created");
-
-			if (jsonString != null)
-				messageItem.setCreated(new Long(jsonString.getString()));
+			
+			long l=0;
+			// try to get number
+			try {
+			l=jsonMessage.getInt("created");
+			} catch (Exception e) {
+				// no luck
+			}
+			if (l==0) {
+				jsonString = jsonMessage.getJsonString("created");
+				l=new Long(jsonString.getString());
+			}
+			if (l>0)
+				messageItem.setCreated(l);
 		}
 		return messageItem;
 	}

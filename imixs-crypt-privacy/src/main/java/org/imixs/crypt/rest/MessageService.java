@@ -27,6 +27,8 @@ package org.imixs.crypt.rest;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,6 +37,7 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.CookieParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -101,7 +104,7 @@ public class MessageService {
 				// save data into file
 				JSONWriter.writeFile(encryptedMessage, CryptSession
 						.getInstance().getRootPath()
-						+ "data/notes/"
+						+ "data/local/"
 						+ encryptedMessage.getDigest());
 
 				return Response.status(Response.Status.OK)
@@ -161,7 +164,7 @@ public class MessageService {
 		if (!CryptSession.getInstance().isValidSession(sessionId))
 			return null;
 
-		File folder = new File(CryptSession.getRootPath() + "data/notes");
+		File folder = new File(CryptSession.getRootPath() + "data/local");
 		File[] listOfFiles = folder.listFiles();
 
 		// read local files
@@ -216,7 +219,7 @@ public class MessageService {
 
 		MessageItem encryptedMessage = JSONWriter
 				.readMessageFromFile(CryptSession.getInstance().getRootPath()
-						+ "data/notes/" + digest);
+						+ "data/local/" + digest);
 
 		// decrypt message
 		MessageItem decryptedMessage;
@@ -235,6 +238,48 @@ public class MessageService {
 
 	}
 
+	
+	
+	/**
+	 * This method deletes a local messageItem
+	 * 
+	 */
+	@DELETE
+	@Path("/{digest}")
+	public Response deleteMessageByDigest(@PathParam("digest") String digest,
+			@CookieParam(value =  IdentityService.SESSION_COOKIE) String sessionId) {
+
+		// validate digest
+		if (digest == null || digest.isEmpty()) {
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+		}
+		// validate key
+		if (!CryptSession.getInstance().isValidSession(sessionId))
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+
+		logger.info("[MessageService] delete '" + digest + "'");
+		// delete file
+		try {
+			Files.delete(Paths.get(CryptSession.getInstance().getRootPath()
+					+ "data/local/" + digest));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).build();
+
+		}
+
+		// success HTTP 200
+		return Response.status(Response.Status.OK)
+				.type(MediaType.APPLICATION_JSON).build();
+
+	}
+	
+	
+	
 	private PublicKey fetchPublicKeyFromPublicServer(String user,
 			String asessionId) throws ImixsCryptException {
 

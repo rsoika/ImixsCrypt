@@ -97,10 +97,7 @@ public class NotesService {
 //			byte[] encrypted = CryptSession.getInstance().ecryptLocal(data,
 //					sessionId);
 
-//			// save data into file
-//			Files.write(
-//					Paths.get(CryptSession.getInstance().getRootPath()
-//							+ "data/notes/" + name), encrypted);
+
 
 			logger.info("[NotesService] encrypted=" + name);
 		} catch (Exception e) {
@@ -139,7 +136,7 @@ public class NotesService {
 		try {
 
 			byte[] data = Files.readAllBytes(Paths.get(CryptSession
-					.getInstance().getRootPath() + "data/notes/" + name));
+					.getInstance().getRootPath() + "data/local/" + name));
 
 //			byte[] decrypted = CryptSession.getInstance().decryptLocal(data,
 //					sessionId);
@@ -175,7 +172,7 @@ public class NotesService {
 			return null;
 
 		File folder = new File(CryptSession.getInstance().getRootPath()
-				+ "data/notes");
+				+ "data/local");
 		File[] listOfFiles = folder.listFiles();
 
 		List<NoteItem> result = new ArrayList<>();
@@ -214,7 +211,7 @@ public class NotesService {
 		// delete file
 		try {
 			Files.delete(Paths.get(CryptSession.getInstance().getRootPath()
-					+ "data/notes/" + name));
+					+ "data/local/" + name));
 		} catch (IOException e) {
 
 			e.printStackTrace();

@@ -28,12 +28,11 @@ package org.imixs.crypt.rest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -131,7 +130,7 @@ class CryptSession {
 
 		// create key and data directories
 		new File(getRootPath() + "keys").mkdirs();
-		new File(getRootPath() + "data/notes").mkdirs();
+		new File(getRootPath() + "data/local").mkdirs();
 
 	}
 
@@ -428,6 +427,8 @@ class CryptSession {
 		MessageItem decryptedMessage = new MessageItem();
 		decryptedMessage.setRecipient(message.getRecipient());
 		decryptedMessage.setSender(message.getSender());
+		decryptedMessage.setDigest(message.getDigest());
+		decryptedMessage.setCreated(message.getCreated());
 
 		// encrypt comment
 		if (message.getComment() != null && !message.getComment().isEmpty()) {
@@ -473,6 +474,9 @@ class CryptSession {
 				+ getIdentity(), password);
 		logger.warning("[CryptSession] sign message not implemented!");
 
+		// set created time
+		message.setCreated(new Date().getTime());
+		
 		// dummy method....
 		// @TODO- need implementation
 		// @ToDo need to be computed with real digest

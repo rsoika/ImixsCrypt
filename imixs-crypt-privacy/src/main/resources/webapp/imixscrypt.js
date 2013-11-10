@@ -23,6 +23,7 @@
 
 var pageSections = [ 'welcome_id', 'start_id', 'login_id', 'workspace_id' ];
 var myIdentity = null;
+var messageItem = null;
 /*
  * Toggle the current page section
  */
@@ -234,16 +235,18 @@ function editNote(digest) {
 			processData : false,
 			contentType : 'application/json',
 			url : "/rest/messages/" + digest,
-			success : function(messageItem) {
+			success : function(result) {
+				messageItem = result;
 				console.log("success");
 				// alert(data);
 				if (messageItem != null) {
 					// decode base64 message body....
-					var encodedMessage=messageItem.message;
-					var encodedComment=messageItem.comment;
-					var content=atob(encodedMessage);
+					var encodedMessage = messageItem.message;
+					var encodedComment = messageItem.comment;
+					var content = atob(encodedMessage);
 					// fill editor
-					$('#notes_editor textarea.tinymce').html(atob(encodedMessage));
+					$('#notes_editor textarea.tinymce').html(
+							atob(encodedMessage));
 					$('#notes_editor #notes_title').val(atob(encodedComment));
 
 				} else {
@@ -269,6 +272,7 @@ function editNote(digest) {
 
 	} else {
 		// clear input data
+		messageItem = null;
 		$('#notes_editor textarea.tinymce').html('');
 		$('#notes_editor #notes_title').val('');
 	}
@@ -279,7 +283,7 @@ function editNote(digest) {
  * Opens the note editor to edit the note. If not name is given a new note is
  * created. If a name is given a ajax request is started to load the text.
  */
-function deleteNote(name) {
+function deleteLocalMessage(digest, name) {
 
 	if (!confirm("Delete '" + name + "' ?"))
 		return;
@@ -287,14 +291,13 @@ function deleteNote(name) {
 		return;
 
 	// delete per ajax POST request
-	if (name != null) {
+	if (digest != null) {
 		// decrypt data
 		$.ajax({
 			type : 'DELETE',
 			dataType : "text",
 			processData : false,
-			contentType : 'application/json',
-			url : "/rest/notes/" + name,
+			url : "/rest/messages/" + digest,
 			success : function(data) {
 				console.log("success");
 				// alert('data delted');
@@ -311,15 +314,19 @@ function deleteNote(name) {
 /**
  * Saves the data of the note editor.
  */
-function saveNote() {
+function saveLocalMessage() {
 
 	var content = $('#notes_editor textarea.tinymce').tinymce().getContent();
 	var name = $('#notes_editor #notes_title').val();
 
 	// encode base64 content and comment
 	// create json data string
-	var jsonData = '{"comment":"' + btoa(name) + '","message":"' + btoa(content)
-			+ '"}';
+	var jsonData = '{"comment":"' + btoa(name) + '","message":"'
+			+ btoa(content) + '"}';
+
+	var oldMessageDigest = null;
+	if (messageItem != null)
+		oldMessageDigest = messageItem.digest;
 
 	// load notes per ajax
 	if (name != null) {
@@ -331,14 +338,27 @@ function saveNote() {
 			contentType : 'application/json',
 			data : jsonData,
 			url : "/rest/messages",
-			success : function() {
+			success : function(result) {
 				console.log("success");
 				// alert('Encrypted!');
 				$("#workspace_notes #notes_editor").hide();
 				$("#workspace_notes #notes_table").show();
+				// update last messageItem
+				messageItem = result;
+
 				readNotes();
 			}
 		});
+
+		// now delete deprecated local message
+		if (oldMessageDigest != null) {
+			$.ajax({
+				type : 'DELETE',
+				dataType : "text",
+				processData : false,
+				url : "/rest/messages/" + oldMessageDigest
+			});
+		}
 
 	}
 
@@ -357,40 +377,50 @@ function closeNote() {
 function readNotes() {
 
 	// get note list....
-	$.getJSON(
-			"/rest/messages",
-			function(data) {
-				console.log("success");
-				if (data != null) {
-					// build list
-					var tableBody = $('#notes_table .table tbody');
-					tableBody.empty();
-					$.each(data, function(index, value) {
-						var d = new Date();
-						d.setTime(value.created);
-						
-						// base64 decode comment string
-						var comment=atob(value.comment);
+	$
+			.getJSON(
+					"/rest/messages",
+					function(data) {
+						console.log("success");
+						if (data != null) {
+							// build list
+							var tableBody = $('#notes_table .table tbody');
+							tableBody.empty();
+							$
+									.each(
+											data,
+											function(index, value) {
+												var d = new Date();
+												d.setTime(value.created);
 
-						var aDelete = "<td><a href='#' onclick=\"deleteNote('"
-								+ comment + "');\">Delete</a></td>;";
+												// base64 decode comment string
+												var comment = atob(value.comment);
 
-						var html = $("<tr><td>" + index
-								+ "</td><td><a href='#' onclick=\"editNote('"
-								+ value.digest + "');\">" + comment
-								+ "</a></td><td>" + d + "</td>" + aDelete
-								+ "</tr>");
-						tableBody.append(html);
-					});
+												var aDelete = "<td><a href='#' onclick=\"deleteLocalMessage('"
+														+ value.digest
+														+ "','"
+														+ comment
+														+ "');\">Delete</a></td>;";
 
-				}
-			}).done(function() {
-		console.log("second success");
-	}).fail(function() {
-		console.log("error");
-	}).always(function() {
-		console.log("complete");
-	});
+												var html = $("<tr><td>"
+														+ index
+														+ "</td><td><a href='#' onclick=\"editNote('"
+														+ value.digest
+														+ "');\">" + comment
+														+ "</a></td><td>" + d
+														+ "</td>" + aDelete
+														+ "</tr>");
+												tableBody.append(html);
+											});
+
+						}
+					}).done(function() {
+				console.log("second success");
+			}).fail(function() {
+				console.log("error");
+			}).always(function() {
+				console.log("complete");
+			});
 
 }
 

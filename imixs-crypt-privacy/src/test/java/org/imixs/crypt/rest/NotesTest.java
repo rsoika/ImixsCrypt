@@ -14,7 +14,7 @@ import org.junit.Test;
 
 /**
  * Test class to encrypt and decrypt messages locally with the local key pair.
- * Local messages are stored in the /data/notes directory.
+ * Local messages are stored in the /data/local directory.
  * 
  * @author rsoika
  *  
