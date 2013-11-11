@@ -162,34 +162,10 @@ function updateProfile() {
 }
 
 /**
- * Verifies the current public node and updates the chat section
+ *
  */
 function updateChat() {
 
-	// get public node...
-	var saveData = $.ajax({
-		type : 'GET',
-		dataType : "text",
-		processData : false,
-		contentType : 'application/json',
-		url : "/rest/session/properties/default.public.node",
-		success : function(resultData) {
-			// alert(resultData);
-			if (resultData == null) {
-				$("#workspace_chat #no_public_node").show();
-				$("#workspace_chat #chat").hide();
-			} else {
-				$("#workspace_chat #no_public_node").hide();
-				$("#workspace_chat #chat").show();
-				// alert(resultData);
-				// insert server address
-				$("#workspace_chat #chat #publicnode_id").append(resultData);
-			}
-		}
-	});
-	saveData.error(function() {
-		alert("Something went wrong");
-	});
 
 }
 
@@ -458,9 +434,9 @@ function sendMessage() {
 /**
  * sends the local public key to the identity service
  */
-function publishPublicKey() {
+function sendPublicKey(host) {
 	// post public key
-	// alert(JSON.stringify( publicKey));
+	 alert('send key to ' + host);
 	var jsonData = JSON.stringify(publicKey);
 	$.ajax({
 		type : 'POST',
@@ -468,10 +444,10 @@ function publishPublicKey() {
 		processData : false,
 		contentType : 'application/json',
 		data : jsonData,
-		url : "/rest/session/publicnode/",
+		url : "/rest/identities?node="+host,
 		success : function() {
 			console.log("success");
-			// alert('Public Key published');
+			 alert('Public Key published');
 
 		}
 	});

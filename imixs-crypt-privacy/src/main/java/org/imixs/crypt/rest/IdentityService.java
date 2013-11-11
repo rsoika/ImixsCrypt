@@ -35,6 +35,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
@@ -64,6 +65,29 @@ public class IdentityService {
 			.getName());
 
 	/**
+	 * This method opens a new session or sends the local public key to a remote
+	 * node.
+	 * 
+	 * The method returns the identity with the local public key
+	 * 
+	 * @param password
+	 *            - password to be set
+	 */
+	@POST
+	@Path("/identities")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response postIdentity(
+			IdentityItem identity,
+			@QueryParam("node") String node,
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
+		if (node == null || node.isEmpty())
+			return createSession(identity);
+		else
+			return sendPublicKey(node, sessionId);
+	}
+
+	/**
 	 * This method opens a new session. The POST method expects an IdentityItem
 	 * with the local ID and the password for the corresponding local private
 	 * key.
@@ -83,11 +107,7 @@ public class IdentityService {
 	 * @param password
 	 *            - password to be set
 	 */
-	@POST
-	@Path("/identities")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
-	public Response createSession(IdentityItem identity) {
+	private Response createSession(IdentityItem identity) {
 		PublicKey publicKey = null;
 		// test if id and password a provided
 		if (identity == null || identity.getKey().isEmpty()) {
@@ -98,7 +118,7 @@ public class IdentityService {
 
 			try {
 				CryptSession.getInstance().openSession(identity.getId(),
-					Base64Coder.decodeString(identity.getKey()));
+						Base64Coder.decodeString(identity.getKey()));
 
 				// verify if a key pair exists
 				publicKey = CryptSession.getInstance().getLocalPublicKey(
@@ -139,10 +159,65 @@ public class IdentityService {
 
 		// return an identity with the public key
 		identity.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
+		identity.setId(CryptSession.getInstance().getIdentity());
 
 		// success HTTP 200
 		return Response.status(Response.Status.OK).entity(identity)
 				.type(MediaType.APPLICATION_JSON).cookie(sessionCookie).build();
+
+	}
+
+	/**
+	 * This method sends the local public key to a remote public node.
+	 * 
+	 * @param node
+	 *            - remote public cryptServer
+	 * @param sessionId
+	 *            - session id
+	 */
+	private Response sendPublicKey(String node, String sessionId) {
+		PublicKey publicKey = null;
+		IdentityItem identity = new IdentityItem();
+		
+		RestClient restClient = new RestClient();
+		restClient.setMediaType(MediaType.APPLICATION_JSON);
+
+		try {
+			String id = CryptSession.getInstance().getIdentity();
+			publicKey = CryptSession.getInstance().getLocalPublicKey(id);
+			identity.setId(id);
+			identity.setKey(Base64Coder.encodeLines(publicKey
+					.getEncoded()));
+			
+			
+			
+			// test default identity
+			String uri = node + "/rest/identities/";
+			String json = "{\"id\":\"" + id+ "\",\"key\":\""
+					+ identity.getKey() + "\"}";
+
+			// I don't know wy we got newLine charactars ....
+		//	json = json.replace("\n", "");
+
+			// uri =
+			// "http://localhost:8080/imixs-crypt-public/rest/identities/";
+			// String json2 =
+			// "{\"user\":\"ralph.soika@imixs.com\", \"key\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCet0H7qeQapHgIsyujUUoyurJUggYbasOt35D5qO48ik8gsFqXhys8Vkevkx31Q1S8mh9f+NQQ7ljguEvzdGjuAOOtQtJ4RhG4WqKE8O1J28YbBgmxOQlBUgL8cbJYp7egNVgqCPZNjCEj2pm1W8Zmd0rZTDAnRHST0Ztpkvk5MQIDAQAB\"}";
+
+			int httpResult = restClient.post(uri, json);
+			
+			if (httpResult<200 || httpResult>=300) {
+				return Response.status(Response.Status.NOT_ACCEPTABLE)
+						.type(MediaType.APPLICATION_JSON).entity(null).build();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(null).build();
+
+		}
+		// success HTTP 200
+		return Response.status(Response.Status.OK).build();
 
 	}
 
@@ -154,30 +229,49 @@ public class IdentityService {
 	@GET
 	@Path("/identities/{id}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getPublicKey(@PathParam("id") String id) {
+	public Response getPublicKey(
+			@PathParam("id") String id,
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 		PublicKey publicKey = null;
-		IdentityItem identity=new IdentityItem();
-		identity.setId(id);
-		try {
-			publicKey = CryptSession.getInstance().getLocalPublicKey(id);
-			if (publicKey == null) {
-				logger.info("KeyPair not yet created");
+		IdentityItem identity = new IdentityItem();
 
-				// Return an emypt key
-				identity.setKey(null);
-				return Response.status(Response.Status.OK).entity(identity)
-						.type(MediaType.APPLICATION_JSON).build();
+		try {
+			if (id == null || id.isEmpty()) {
+				publicKey = CryptSession.getInstance().getLocalPublicKey(id);
+				if (publicKey == null) {
+					logger.info("KeyPair not yet created");
+					// Return an empty key
+					identity.setKey(null);
+					identity.setId(null);
+				} else {
+					// update the local identity and return the local public key
+					id = CryptSession.getInstance().getIdentity();
+					identity.setId(id);
+					identity.setKey(Base64Coder.encodeLines(publicKey
+							.getEncoded()));
+
+				}
+			} else {
+				// get the foreign public key
+				publicKey = CryptSession.getInstance().getPublicKey(id,
+						sessionId);
+				if (publicKey != null) {
+					identity.setKey(Base64Coder.encodeLines(publicKey
+							.getEncoded()));
+					identity.setId(id);
+				} else {
+					// Return an emypt key
+					identity.setKey(null);
+					identity.setId(null);
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(null).type(MediaType.APPLICATION_JSON).build();
 		}
-		
 
-		// Return the key
-		identity.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
-		
+		// Return the identity
 		return Response.status(Response.Status.OK).entity(identity)
 				.type(MediaType.APPLICATION_JSON).build();
 
@@ -191,9 +285,10 @@ public class IdentityService {
 	@GET
 	@Path("/identities")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getDefaultPublicKey() {
-		return getPublicKey(null);
-		
+	public Response getDefaultPublicKey(
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
+		return getPublicKey(null, sessionId);
+
 	}
 
 	/**
@@ -206,7 +301,8 @@ public class IdentityService {
 	@POST
 	@Path("/session/properties/{property}")
 	@Consumes("text/plain")
-	public Response setProperty(String value,
+	public Response setProperty(
+			String value,
 			@PathParam("property") String property,
 			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 
@@ -234,7 +330,8 @@ public class IdentityService {
 	@GET
 	@Path("/session/properties/{property}")
 	@Produces("text/plain")
-	public Response getProperty(@PathParam("property") String property,
+	public Response getProperty(
+			@PathParam("property") String property,
 			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
 		String value = null;
 		try {
@@ -248,52 +345,6 @@ public class IdentityService {
 		}
 		// success HTTP 200
 		return Response.status(Response.Status.OK).entity(value).build();
-
-	}
-
-	/**
-	 * This method sends the local public key to the default public server node
-	 * 
-	 * @param property
-	 *            - property to be set
-	 */
-	@POST
-	@Path("/session/publicnode")
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response publishPublicKey(IdentityItem key,
-			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
-
-		RestClient restClient = new RestClient();
-		restClient.setMediaType(MediaType.APPLICATION_JSON);
-
-		// get Host
-		String host;
-		try {
-			host = CryptSession.getInstance().getProperty(
-					IdentityService.DEFAULT_PUBLIC_NODE, sessionId);
-
-			// test default identity
-			String uri = host + "/rest/identities/";
-			String json = "{\"user\":\"" + key.getId() + "\",\"key\":\""
-					+ key.getKey() + "\"}";
-
-			// I don't know wy we got newLine charactars ....
-			json = json.replace("\n", "");
-
-			// uri =
-			// "http://localhost:8080/imixs-crypt-public/rest/identities/";
-			// String json2 =
-			// "{\"user\":\"ralph.soika@imixs.com\", \"key\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCet0H7qeQapHgIsyujUUoyurJUggYbasOt35D5qO48ik8gsFqXhys8Vkevkx31Q1S8mh9f+NQQ7ljguEvzdGjuAOOtQtJ4RhG4WqKE8O1J28YbBgmxOQlBUgL8cbJYp7egNVgqCPZNjCEj2pm1W8Zmd0rZTDAnRHST0Ztpkvk5MQIDAQAB\"}";
-
-			int httpResult = restClient.post(uri, json);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Response.status(Response.Status.NOT_ACCEPTABLE)
-					.type(MediaType.APPLICATION_JSON).entity(null).build();
-
-		}
-		// success HTTP 200
-		return Response.status(Response.Status.OK).build();
 
 	}
 

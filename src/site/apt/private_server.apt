@@ -59,11 +59,10 @@ ImixsCrypt Private Server
 
 
  
-*The Key-Management
+*The Data Management
 ~~~~~~~~~~~~~~ 
- All RSA keys managed by the ImixsCrypt Private Server are stored in the local server 
- directory /keys/. This directory contains your local private RSA key pair as also
- public keys from other users. 
+ All RSA keys and encrypted messages managed by the ImixsCrypt Private Server are stored 
+ in the local server directory. 
  
 
 *--------------*----------------------------------------------------------------* 
@@ -81,10 +80,22 @@ ImixsCrypt Private Server
 |              | You can copy a public key you trust her here.              	|
 |              |                                                              	|
 *--------------+----------------------------------------------------------------+
+|/data/local   | Contains private encrypted messages. These messages are  		|
+|              | encrypted with the users local public key.		              	|
+|              | These messages can be decrypted with the local private key.	|
+*--------------+----------------------------------------------------------------+
+|/data/remote  | Contains encrypted messages received from a remote node.		|
+|              | These messages can be decrypted with the local private key.	|
+|              |                                                              	|
+*--------------+----------------------------------------------------------------+
+|/data/pending | Contains messages encrypted with a foreign public key to be 	|
+|              | send to a remote public node server        					|
+|              |                                                              	|
+*--------------+----------------------------------------------------------------+
  
  To be sure to have a secure communication with other users you should copy a 
  trusted version of the public key into the /keys/trusted/ directory. 
- For example if you reciefe a local copy of the public key or you got the public 
+ For example if you receive a local copy of the public key or you got the public 
  key through a secure pgp encrypted email. 
  
  
@@ -92,7 +103,10 @@ ImixsCrypt Private Server
 *The REST API
 ~~~~~~~~~~~~~~
  The ImixsCrypt-Private-Server provides a local REST API to manage identities and encrypt or
- decrypt messages using a locak RSA private and public key.
+ decrypt messages using the users local RSA private and public key.
+ The IdentityService is used to managed key pairs and public keys to encrypt messages.
+ The MessageService is used to encrypt or decrypt messages. Encrypted messages
+ can be send or received from a remote server node.
  
  
 **IdentityService 
@@ -121,7 +135,11 @@ ImixsCrypt Private Server
 |                     |          |If no key-pair still exits and a password |
 |                     |          |was provided then a new local key pair will be generated.      |
 *---------------------+----------+---------------------------------------+
-| /identities/		  |DELETE    |Closes the current session				|
+| /identities?node=xxx |POST     |Posts the local public key to a remote  	|
+|                     |          |server node. This allows other uses		|
+|                     |          |to send encrypted messages.				|
+*---------------------+----------+---------------------------------------+
+| /identities		  |DELETE    |Closes the current session				|
 |                     |          |session for a specific identity.  		|
 |                     |          |\{"id":"robin.hood@sherwood.forest","key": ""\} |
 *---------------------+----------+---------------------------------------+

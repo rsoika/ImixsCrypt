@@ -232,39 +232,19 @@
 				<!-- Chat Section -->
 				<div class="tab-pane" id="workspace_chat">
 
-
-					<div id="no_public_node">
-						<h4>You have not yet defined a public crypt server.</h4>
-						<p>Plese enter the server to use for a chat.</p>
-
-						<div class="form-group">
-							<label for="publicnode_id">Plublic Crypt Server:</label> <input
-								type="text" class="form-control" id="publicnode_id"
-								placeholder="Enter server address">
-						</div>
-
-						<button type="submit" class="btn btn-default"
-							onclick="savePublicNode($('#publicnode_id').val());">Connect</button>
-							<br /><br />
-					</div>
-
-
 					<div id="chat">
-						<h4>Public Crypt Server:</h4>
-						<p id="publicnode_id"></p>
-
+						
 						<div class="form-group" id="message_editor">
-							<label for="message_editor">Message: <input
-								type="text" id="receipient_id"
-								placeholder="Enter Email address" /></label>
-							
-							 <textarea class="form-control tinymce" rows="3"></textarea>
+							<label for="message_editor">Message: <input type="text"
+								id="receipient_id" placeholder="Enter Email address" /></label>
+
+							<textarea class="form-control tinymce" rows="3"></textarea>
 						</div>
 
 						<button type="submit" class="btn btn-default"
 							onclick="sendMessage();">Send</button>
-							
-							<br /><br />
+
+						<br /> <br />
 					</div>
 
 
@@ -306,7 +286,17 @@
 						</tbody>
 					</table>
 
-					<button type="submit" class="btn btn-default">Submit</button>
+
+					<div class="form-group">
+						<label for="publicnode_id">ID:</label> <input type="text"
+							class="form-control" id="publicnode_id"
+							placeholder="Enter a new public crypt server URL">
+					
+						<button type="submit" class="btn btn-default"
+							onclick="sendPublicKey($('#publicnode_id').val());">Add..</button>
+
+
+					</div>
 
 
 				</div>
