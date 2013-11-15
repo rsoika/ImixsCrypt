@@ -170,8 +170,8 @@ public class MessageService {
 		try {
 			MessageItem message = new MessageItem();
 			message.setMessage(encryptedMessage);
-			message.setUser(id);
-			MessageRepository.getInstance().putMessage(message);
+			message.setSender(id);
+		//	MessageRepository.getInstance().putMessage(message);
 			logger.info("decrypted=" + encryptedMessage);
 		} catch (Exception e) {
 
@@ -211,11 +211,11 @@ public class MessageService {
 		List<MessageItem> result = new ArrayList<MessageItem>();
 		MessageItem m = new MessageItem();
 		m.setMessage("hallo");
-		m.setUser("sepp");
+		m.setSender("sepp");
 		result.add(m);
 		m = new MessageItem();
 		m.setMessage("hallo Welt");
-		m.setUser("Anna");
+		m.setSender("Anna");
 		result.add(m);
 
 		MessageItem[] messageArray = result.toArray(new MessageItem[result

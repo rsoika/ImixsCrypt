@@ -192,7 +192,7 @@ public class IdentityService {
 			
 			
 			// test default identity
-			String uri = node + "/rest/identities/";
+			String uri = node + "/rest/identities";
 			String json = "{\"id\":\"" + id+ "\",\"key\":\""
 					+ identity.getKey() + "\"}";
 

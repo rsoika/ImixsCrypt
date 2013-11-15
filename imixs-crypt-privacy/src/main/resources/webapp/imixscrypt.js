@@ -142,7 +142,6 @@ function login() {
 			readNotes();
 			// Login successful and session started - switch to workspace
 			togglePage('workspace_id');
-			publishPublicKey();
 		}
 	});
 	saveData.error(function() {
@@ -436,8 +435,9 @@ function sendMessage() {
  */
 function sendPublicKey(host) {
 	// post public key
-	 alert('send key to ' + host);
-	var jsonData = JSON.stringify(publicKey);
+//	 alert('send key to ' + host);
+	 
+	 var jsonData=JSON.stringify(myIdentity);
 	$.ajax({
 		type : 'POST',
 		dataType : "json",
@@ -448,7 +448,9 @@ function sendPublicKey(host) {
 		success : function() {
 			console.log("success");
 			 alert('Public Key published');
-
+		},
+		error : function(result) {
+			alert('Failed to send public key!');
 		}
 	});
 

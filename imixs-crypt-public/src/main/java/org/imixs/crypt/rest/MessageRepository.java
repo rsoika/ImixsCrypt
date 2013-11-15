@@ -98,19 +98,19 @@ class MessageRepository {
 	 */
 	public void putMessage(MessageItem message) {
 
-		if (message == null || message.getUser() == null
-				|| message.getUser().isEmpty())
+		if (message == null || message.getSender() == null
+				|| message.getSender().isEmpty())
 			return;
 
 		// get Message for user
-		List<MessageItem> messageList = repositroy.get(message.getUser());
+		List<MessageItem> messageList = repositroy.get(message.getSender());
 		if (messageList == null)
 			messageList = new ArrayList<MessageItem>();
 
 		messageList.add(message);
-		repositroy.put(message.getUser(), messageList);
+		repositroy.put(message.getSender(), messageList);
 
-		logger.fine("[MessageRepository] add message for " + message.getUser());
+		logger.fine("[MessageRepository] add message for " + message.getSender());
 	}
 
 	/**
