@@ -158,7 +158,7 @@ public class IdentityService {
 				path, domain, "", -1, false);
 
 		// return an identity with the public key
-		identity.setKey(Base64Coder.encodeLines(publicKey.getEncoded()));
+		identity.setKey(new String(Base64Coder.encode(publicKey.getEncoded())));
 		identity.setId(CryptSession.getInstance().getIdentity());
 
 		// success HTTP 200
@@ -186,8 +186,8 @@ public class IdentityService {
 			String id = CryptSession.getInstance().getIdentity();
 			publicKey = CryptSession.getInstance().getLocalPublicKey(id);
 			identity.setId(id);
-			identity.setKey(Base64Coder.encodeLines(publicKey
-					.getEncoded()));
+			identity.setKey(new String(Base64Coder.encode(publicKey
+					.getEncoded())));
 			
 			
 			
@@ -199,12 +199,17 @@ public class IdentityService {
 					+ identity.getKey() + "\"}";
 			
 			
-			json = "{\"id\":\"" + id+ "\",\"key\":\""
-					+"doffi" + "\"}";
+			
+//			json = "{\"id\":\"" + id+ "\",\"key\":\""
+//					+"doffi" + "\"}";
 
 			// I don't know wy we got newLine charactars ....
-		//	json = json.replace("\n", "");
-
+//			json = json.replace("\n", "");
+//			if (json.contains("\n")) {
+//				logger.warning(" return found!");
+//			}
+			
+			 
 			// uri =
 			// "http://localhost:8080/imixs-crypt-public/rest/identities/";
 			// String json2 =
@@ -253,8 +258,8 @@ public class IdentityService {
 					// update the local identity and return the local public key
 					id = CryptSession.getInstance().getIdentity();
 					identity.setId(id);
-					identity.setKey(Base64Coder.encodeLines(publicKey
-							.getEncoded()));
+					identity.setKey(new String(Base64Coder.encode(publicKey
+							.getEncoded())));
 
 				}
 			} else {
@@ -262,8 +267,8 @@ public class IdentityService {
 				publicKey = CryptSession.getInstance().getPublicKey(id,
 						sessionId);
 				if (publicKey != null) {
-					identity.setKey(Base64Coder.encodeLines(publicKey
-							.getEncoded()));
+					identity.setKey(new String(Base64Coder.encode(publicKey
+							.getEncoded())));
 					identity.setId(id);
 				} else {
 					// Return an emypt key

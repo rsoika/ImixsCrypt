@@ -60,10 +60,8 @@ public class IdentityItem implements java.io.Serializable {
 		return key;
 	}
 
-	public void setKey(String key) {
-		this.key = key;
+	public void setKey(String akey) {
+		this.key = akey;
 	}
-
-	
 
 }

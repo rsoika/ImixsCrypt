@@ -15,7 +15,7 @@ import org.junit.Test;
  * This test class generates key pairs and open/closes a password protected
  * crypt session
  *  
- * @author rsoika
+ * @author rsoika 
  * 
  */
 public class IdentityServiceTest { 
@@ -73,7 +73,7 @@ public class IdentityServiceTest {
 		Assert.assertFalse(keyFile.exists());
 
 		// generate new key by opening a session with a password
-		String uri = HOST + "/rest/identities";
+		String uri = HOST + "/rest/identities/";
 		String value = "{\"id\":\"" + IDENTITY + "\",\"key\":\"" + Base64Coder.encodeString(PASSWORD)+ "\"}";
 		try { 
 			restClient.setMediaType(MediaType.APPLICATION_JSON);

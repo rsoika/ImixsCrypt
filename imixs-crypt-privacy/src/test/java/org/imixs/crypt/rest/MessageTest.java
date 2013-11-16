@@ -19,7 +19,7 @@ import org.junit.Test;
  * 
  * The test class test encryption and decryption
  * 
- * @author rsoika
+ * @author rsoika 
  * 
  */
 public class MessageTest {

@@ -435,10 +435,10 @@ function sendMessage() {
  */
 function sendPublicKey(host) {
 	// post public key
-//	 alert('send key to ' + host);
+	//alert('send key to ' + host);
 	 var uri="/rest/identities?node="+host;
 	 var jsonData=JSON.stringify(myIdentity);
-	 alert(uri);
+	 //alert(uri);
 	$.ajax({
 		type : 'POST',
 		dataType : "json",

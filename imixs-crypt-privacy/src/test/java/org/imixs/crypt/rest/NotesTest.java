@@ -17,7 +17,7 @@ import org.junit.Test;
  * Local messages are stored in the /data/local directory.
  * 
  * @author rsoika
- *  
+ *   
  */
 public class NotesTest {
 	String HOST = "http://127.0.0.1:4040";
