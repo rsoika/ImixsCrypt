@@ -25,6 +25,7 @@
 
 package org.imixs.crypt.rest;
 
+import java.io.IOException;
 import java.security.PublicKey;
 import java.util.logging.Logger;
 
@@ -41,6 +42,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.imixs.crypt.ImixsCryptException;
+import org.imixs.crypt.json.JSONWriter;
 import org.imixs.crypt.util.Base64Coder;
 import org.imixs.crypt.util.RestClient;
 import org.imixs.crypt.xml.IdentityItem;
@@ -55,36 +57,38 @@ import org.imixs.crypt.xml.IdentityItem;
  * @author rsoika
  * 
  */
-@Path("/rest")
+@Path("/api")
 public class IdentityService {
 
 	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
 	public final static String DEFAULT_PUBLIC_NODE = "default.public.node";
+	private static String DEFAULT_ROOT_PATH = "imixscrypt/";
 
 	private final static Logger logger = Logger.getLogger(IdentityService.class
 			.getName());
 
 	/**
-	 * This method opens a new session or sends the local public key to a remote
-	 * node.
-	 * 
-	 * The method returns the identity with the local public key
-	 *  
-	 * @param password
-	 *            - password to be set
+	 * This method  stores a public key
 	 */
 	@POST
 	@Path("/identities")
 	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response postIdentity(
-			IdentityItem identity,
-			@QueryParam("node") String node,
-			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
+			IdentityItem identity) {
 		
 		logger.info("new public key receifed");
 		
-		return null;
+		try {
+			JSONWriter.writeFile(identity, DEFAULT_ROOT_PATH+ identity.getId()+".pub");
+		} catch (IOException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(null).type(MediaType.APPLICATION_JSON).build();
+		}
+		
+		
+		// Return OK
+		return Response.status(Response.Status.OK).build();
 	}
 
 	/**
@@ -94,7 +98,7 @@ public class IdentityService {
 	 */
 	@GET
 	@Path("/identities/{id}")
-	@Produces(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)  
 	public Response getPublicKey(
 			@PathParam("id") String id,
 			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
@@ -105,15 +109,20 @@ public class IdentityService {
 				// get the foreign public key
 //				publicKey = CryptSession.getInstance().getPublicKey(id,
 //						sessionId);
-				if (publicKey != null) {
-					identity.setKey(Base64Coder.encodeLines(publicKey
-							.getEncoded()));
-					identity.setId(id);
-				} else {
-					// Return an emypt key
-					identity.setKey(null);
-					identity.setId(null);
-				}
+//				if (publicKey != null) {
+//					identity.setKey(Base64Coder.encodeLines(publicKey
+//							.getEncoded()));
+//					identity.setId(id);
+//				} else {
+//					// Return an emypt key
+//					identity.setKey(null);
+//					identity.setId(null);
+//				}
+			
+			
+			// dummy
+			identity.setId("Sepp");
+			identity.setKey("12523452345");
 			
 		} catch (Exception e) {
 			e.printStackTrace();

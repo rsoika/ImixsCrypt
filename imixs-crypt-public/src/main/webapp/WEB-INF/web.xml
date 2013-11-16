@@ -25,7 +25,7 @@
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ImixsCryptPublicService</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
+		<url-pattern>/service/*</url-pattern>
 	</servlet-mapping>
 	
 	

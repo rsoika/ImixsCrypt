@@ -192,9 +192,15 @@ public class IdentityService {
 			
 			
 			// test default identity
-			String uri = node + "/rest/identities";
+			if (!node.endsWith("/"))
+				node=node+"/";
+			String uri = node + "identities";
 			String json = "{\"id\":\"" + id+ "\",\"key\":\""
 					+ identity.getKey() + "\"}";
+			
+			
+			json = "{\"id\":\"" + id+ "\",\"key\":\""
+					+"doffi" + "\"}";
 
 			// I don't know wy we got newLine charactars ....
 		//	json = json.replace("\n", "");
