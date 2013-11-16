@@ -57,7 +57,7 @@ import org.imixs.crypt.xml.IdentityItem;
  * @author rsoika
  * 
  */
-@Path("/api")
+@Path("/identities")
 public class IdentityService {
 
 	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
@@ -71,7 +71,7 @@ public class IdentityService {
 	 * This method  stores a public key
 	 */
 	@POST
-	@Path("/identities")
+	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postIdentity(
 			IdentityItem identity) {
@@ -86,7 +86,7 @@ public class IdentityService {
 					.entity(null).type(MediaType.APPLICATION_JSON).build();
 		}
 		
-		
+		 
 		// Return OK
 		return Response.status(Response.Status.OK).build();
 	}
@@ -97,7 +97,7 @@ public class IdentityService {
 	 * @return
 	 */
 	@GET
-	@Path("/identities/{id}")
+	@Path("/{id}")
 	@Produces(MediaType.APPLICATION_JSON)  
 	public Response getPublicKey(
 			@PathParam("id") String id,
