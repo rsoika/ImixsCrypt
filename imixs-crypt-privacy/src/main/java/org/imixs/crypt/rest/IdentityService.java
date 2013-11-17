@@ -26,6 +26,8 @@
 package org.imixs.crypt.rest;
 
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
@@ -59,7 +61,7 @@ import org.imixs.crypt.xml.IdentityItem;
 public class IdentityService {
 
 	public final static String SESSION_COOKIE = "ImixsCryptSessionID";
-	public final static String DEFAULT_PUBLIC_NODE = "default.public.node";
+	public final static String PUBLIC_NODE_ = "public.node.";
 
 	private final static Logger logger = Logger.getLogger(IdentityService.class
 			.getName());
@@ -170,6 +172,9 @@ public class IdentityService {
 	/**
 	 * This method sends the local public key to a remote public node.
 	 * 
+	 * After a successful call of the remote server, the node will be stored in
+	 * the properties.
+	 * 
 	 * @param node
 	 *            - remote public cryptServer
 	 * @param sessionId
@@ -178,7 +183,7 @@ public class IdentityService {
 	private Response sendPublicKey(String node, String sessionId) {
 		PublicKey publicKey = null;
 		IdentityItem identity = new IdentityItem();
-		
+
 		RestClient restClient = new RestClient();
 		restClient.setMediaType(MediaType.APPLICATION_JSON);
 
@@ -188,36 +193,16 @@ public class IdentityService {
 			identity.setId(id);
 			identity.setKey(new String(Base64Coder.encode(publicKey
 					.getEncoded())));
-			
-			
-			
 			// test default identity
 			if (!node.endsWith("/"))
-				node=node+"/";
+				node = node + "/";
 			String uri = node + "identities";
-			String json = "{\"id\":\"" + id+ "\",\"key\":\""
+			String json = "{\"id\":\"" + id + "\",\"key\":\""
 					+ identity.getKey() + "\"}";
-			
-			
-			
-//			json = "{\"id\":\"" + id+ "\",\"key\":\""
-//					+"doffi" + "\"}";
-
-			// I don't know wy we got newLine charactars ....
-//			json = json.replace("\n", "");
-//			if (json.contains("\n")) {
-//				logger.warning(" return found!");
-//			}
-			
-			 
-			// uri =
-			// "http://localhost:8080/imixs-crypt-public/rest/identities/";
-			// String json2 =
-			// "{\"user\":\"ralph.soika@imixs.com\", \"key\":\"MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCet0H7qeQapHgIsyujUUoyurJUggYbasOt35D5qO48ik8gsFqXhys8Vkevkx31Q1S8mh9f+NQQ7ljguEvzdGjuAOOtQtJ4RhG4WqKE8O1J28YbBgmxOQlBUgL8cbJYp7egNVgqCPZNjCEj2pm1W8Zmd0rZTDAnRHST0Ztpkvk5MQIDAQAB\"}";
 
 			int httpResult = restClient.post(uri, json);
-			
-			if (httpResult<200 || httpResult>=300) {
+
+			if (httpResult < 200 || httpResult >= 300) {
 				return Response.status(Response.Status.NOT_ACCEPTABLE)
 						.type(MediaType.APPLICATION_JSON).entity(null).build();
 			}
@@ -227,8 +212,18 @@ public class IdentityService {
 					.type(MediaType.APPLICATION_JSON).entity(null).build();
 
 		}
+
+		// store node in properties
+		try {
+			addPublicNodeToProperties(node, sessionId);
+		} catch (ImixsCryptException e) {
+			e.printStackTrace();
+			return Response.status(Response.Status.NOT_ACCEPTABLE)
+					.type(MediaType.APPLICATION_JSON).entity(null).build();
+		}
+
 		// success HTTP 200
-		return Response.status(Response.Status.OK).build();
+		return Response.status(Response.Status.OK).entity(identity).build();
 
 	}
 
@@ -303,6 +298,50 @@ public class IdentityService {
 	}
 
 	/**
+	 * This method returns a list of registred public nodes. These nodes can be
+	 * used to exchange messageItems.
+	 * 
+	 * @param sessionId
+	 * @return array of strings
+	 */
+	@GET
+	@Path("/nodes")
+	@Produces(MediaType.APPLICATION_JSON)
+	public String[] getPublicNodes(
+			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
+
+		List<String> nodeList = new ArrayList<String>();
+		int size = 0;
+		try {
+
+			// verify existing nodes
+			// Property public.node.0, public.node.1, ...
+			for (int j = 0; j < 10; j++) {
+				String value;
+				value = CryptSession.getInstance().getProperty(
+						PUBLIC_NODE_ + j, sessionId);
+				if (value != null) {
+					nodeList.add(value);
+					size++;
+				}
+			}
+
+		} catch (ImixsCryptException e) {
+			e.printStackTrace();
+			// return empty list
+			return null;
+			
+		}
+		String[] result = new String[size];
+
+		for (int j = 0; j < size; j++) {
+			result[j] = nodeList.get(j);
+		}
+
+		return result;
+	}
+
+	/**
 	 * This method sets a value in the local property file. The value is part of
 	 * the body
 	 * 
@@ -312,6 +351,7 @@ public class IdentityService {
 	@POST
 	@Path("/session/properties/{property}")
 	@Consumes("text/plain")
+	@Deprecated
 	public Response setProperty(
 			String value,
 			@PathParam("property") String property,
@@ -341,6 +381,7 @@ public class IdentityService {
 	@GET
 	@Path("/session/properties/{property}")
 	@Produces("text/plain")
+	@Deprecated
 	public Response getProperty(
 			@PathParam("property") String property,
 			@CookieParam(value = IdentityService.SESSION_COOKIE) String sessionId) {
@@ -357,6 +398,41 @@ public class IdentityService {
 		// success HTTP 200
 		return Response.status(Response.Status.OK).entity(value).build();
 
+	}
+
+	/**
+	 * Adds a new public node entry into the propties file
+	 * 
+	 * public node entries are a sequence of numbers
+	 * 
+	 * <code>
+	 *  public.node.0=xxx
+	 *  public.node.1=yyy
+	 *  public.node.2.zzz
+	 * </code>
+	 * 
+	 * @param aNode
+	 * @throws ImixsCryptException
+	 */
+	private void addPublicNodeToProperties(String aNode, String asessionId)
+			throws ImixsCryptException {
+		int pos = 0;
+		// verify if node exists
+		for (int j = 0; j < 10; j++) {
+			String value = CryptSession.getInstance().getProperty(
+					PUBLIC_NODE_ + j, asessionId);
+			if (value != null && value.equals(aNode)) {
+				// still exits
+				return;
+			}
+			if (value != null)
+				pos++;
+		}
+
+		// add new value
+
+		CryptSession.getInstance().setProperty(PUBLIC_NODE_ + pos, aNode,
+				asessionId);
 	}
 
 }

@@ -73,6 +73,7 @@ public class IdentityService {
 	@POST
 	@Path("/")
 	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)  
 	public Response postIdentity(
 			IdentityItem identity) {
 		
@@ -88,7 +89,7 @@ public class IdentityService {
 		
 		 
 		// Return OK
-		return Response.status(Response.Status.OK).build();
+		return Response.status(Response.Status.OK).entity(identity).build();
 	}
 
 	/**

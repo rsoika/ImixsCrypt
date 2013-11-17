@@ -446,12 +446,12 @@ function sendPublicKey(host) {
 		contentType : 'application/json',
 		data : jsonData,
 		url : uri,
-		success : function() {
+		success : function(  data,  textStatus,  jqXHR ) {
 			console.log("success");
 			 alert('Public Key published');
 		},
-		error : function(result) {
-			alert('Failed to send public key!');
+		error: function(jqXHR,error, errorThrown) {  
+			alert('F2ailed to send public key!');
 		}
 	});
 

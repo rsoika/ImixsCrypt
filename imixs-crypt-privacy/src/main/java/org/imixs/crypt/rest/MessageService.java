@@ -284,7 +284,7 @@ public class MessageService {
 		RestClient restClient = new RestClient();
 		// get Host
 		String host = CryptSession.getInstance().getProperty(
-				IdentityService.DEFAULT_PUBLIC_NODE, asessionId);
+				IdentityService.PUBLIC_NODE_+".0", asessionId);
 
 		// test default identity
 		String uri = host + "/rest/identities/" + user;
@@ -321,7 +321,7 @@ public class MessageService {
 		RestClient restClient = new RestClient();
 		// get Host
 		String host = CryptSession.getInstance().getProperty(
-				IdentityService.DEFAULT_PUBLIC_NODE, asessionId);
+				IdentityService.PUBLIC_NODE_+".0", asessionId);
 
 		// test default identity
 		String uri = host + "/rest/session/" + user;
