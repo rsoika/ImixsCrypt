@@ -130,7 +130,12 @@ class CryptSession {
 
 		// create key and data directories
 		new File(getRootPath() + "keys").mkdirs();
+		new File(getRootPath() + "keys/trusted").mkdirs();
+		new File(getRootPath() + "keys/public").mkdirs();
 		new File(getRootPath() + "data/local").mkdirs();
+		
+		
+		
 
 	}
 
@@ -309,6 +314,8 @@ class CryptSession {
 	 * 
 	 * If the param id is empty then the method lookups the default identity in
 	 * the properties file.
+	 * 
+	 * For this method call a sessionId is not necessary. 
 	 * 
 	 * 
 	 * The method returns null if no key exists.
