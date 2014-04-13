@@ -1,0 +1,5 @@
+Static Node.js Server.
+
+to start:
+
+>nodejs static_server.js 
