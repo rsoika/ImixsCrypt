@@ -44,3 +44,8 @@ To Authenticate via a local web server we can use the "Public Key Authentication
 SSH Framework for node.js
 ====
 see: https://github.com/Medium/ursa
+
+
+Java HTTPS Client example
+=====
+see: http://www.mkyong.com/java/java-https-client-httpsurlconnection-example/
