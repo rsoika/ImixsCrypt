@@ -22,3 +22,22 @@ There is no reason to trust anyone in the Internet your secrets or your private 
 Use Cryptography
 ============
 Cryptography is nothing new. It exitss before the internet becomes part of your live. Imixs crypt uses a well known and trustable crypthography alogrithm called RSA. Read was RSA is and how it works.
+
+
+
+Reflections of a redesign....
+============
+
+The current JAX-RS Implementation should be changed. Instead we can use node.js to provide a local server. Secondary we think using a existing OpenSSL infrastructure from the clients OS is more easy to use and more secure.
+
+To Authenticate via a local web server we can use the "Public Key Authentication Method" from SSH (https://tools.ietf.org/html/rfc4252#section-7)
+
+   With this method, the possession of a private key serves as
+   authentication.  This method works by sending a signature created
+   with a private key of the user.  The server MUST check that the key
+   is a valid authenticator for the user, and MUST check that the
+   signature is valid.  If both hold, the authentication request MUST be
+   accepted; otherwise, it MUST be rejected.  Note that the server MAY
+   require additional authentications after successful authentication.
+   
+   
