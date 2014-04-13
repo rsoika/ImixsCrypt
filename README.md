@@ -41,3 +41,6 @@ To Authenticate via a local web server we can use the "Public Key Authentication
    require additional authentications after successful authentication.
    
    
+SSH Framework for node.js
+====
+see: https://github.com/Medium/ursa
